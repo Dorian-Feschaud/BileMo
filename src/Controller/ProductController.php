@@ -39,7 +39,16 @@ final class ProductController extends AbstractController{
     #[Route('api/products/{id}', name: 'product', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function getProduct(Product $product, SerializerInterface $serializer): JsonResponse
     {
-        $jsonProduct = $serializer->serialize($product, 'json', null);
+        $groups = ['getProducts'];
+
+        if ($this->IsGranted('ROLE_SUPER_ADMIN')) {
+            $groups[] = 'getProductsSuperAdmin';
+        }
+
+        $context = SerializationContext::create()
+                ->setGroups($groups);
+
+        $jsonProduct = $serializer->serialize($product, 'json', $context);
 
         return new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
     }
@@ -53,7 +62,16 @@ final class ProductController extends AbstractController{
         $em->persist($product);
         $em->flush();
 
-        $jsonProduct = $serializer->serialize($product, 'json', null);
+        $groups = ['getProducts'];
+
+        if ($this->IsGranted('ROLE_SUPER_ADMIN')) {
+            $groups[] = 'getProductsSuperAdmin';
+        }
+
+        $context = SerializationContext::create()
+                ->setGroups($groups);
+
+        $jsonProduct = $serializer->serialize($product, 'json', $context);
 
         $location = $urlGenerator->generate('product', ['id' => $product->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
