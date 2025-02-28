@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Customer;
 use App\Entity\Product;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -27,34 +28,54 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager):void
     {
-        $this->loadUsers($manager);
-        $this->loadProducts($manager);
+        $this->loadSuperAdmin($manager);
+        $customers = $this->loadCustomers($manager);
+        $this->loadProducts($manager, $customers);
 
         $manager->flush();
     }
 
-    protected function loadUsers(ObjectManager $manager): void
+    protected function loadSuperAdmin(ObjectManager $manager): void
     {
         $user = new User();
         $user->setEmail('superadmin@example.com');
         $user->setRoles(['ROLE_SUPER_ADMIN']);
         $user->setPassword($this->userPasswordHasher->hashPassword($user, 'password'));
         $manager->persist($user);
-
-        $user = new User();
-        $user->setEmail('admin@example.com');
-        $user->setRoles(['ROLE_ADMIN']);
-        $user->setPassword($this->userPasswordHasher->hashPassword($user, 'password'));
-        $manager->persist($user);
-
-        $user = new User();
-        $user->setEmail('user@example.com');
-        $user->setRoles(['ROLE_USER']);
-        $user->setPassword($this->userPasswordHasher->hashPassword($user, 'password'));
-        $manager->persist($user);
     }
 
-    protected function loadProducts(ObjectManager $manager, int $count = 20): void
+    protected function loadCustomers(ObjectManager $manager, int $count = 3): array
+    {
+        $customers = [];
+        for ($i = 0; $i < $count; $i++) {
+            $admin = new User();
+            $admin->setEmail('admin' . $i . '@example.com');
+            $admin->setRoles(['ROLE_ADMIN']);
+            $admin->setPassword($this->userPasswordHasher->hashPassword($admin, 'password'));
+            $manager->persist($admin);
+
+            $customer = new Customer();
+            $customer->setName('Customer ' . $i);
+            $customer->setAdmin($admin);
+            
+            for ($j = 0; $j < $count; $j++) {
+                $user = new User();
+                $user->setEmail('user' . $j . '@customer' . $i . '.com');
+                $user->setRoles(['ROLE_USER']);
+                $user->setPassword($this->userPasswordHasher->hashPassword($user, 'password'));
+                $manager->persist($user);
+
+                $customer->addUser($user);
+            }
+
+            $manager->persist($customer);
+            $customers[] = $customer;
+        }
+
+        return $customers;
+    }
+
+    protected function loadProducts(ObjectManager $manager, array $customers, int $count = 20): void
     {
         for ($i = 0; $i < $count; $i++) {
             $product = new Product();
@@ -81,6 +102,12 @@ class AppFixtures extends Fixture
             $product->setRam($this->faker->randomElement([8, 12, 16]));
             $product->setBatteryCapacity($this->faker->numberBetween(3700, 4200));
             $product->setNetwork($this->faker->randomElement(['5G', '4G']));
+            
+            for ($j = 0; $j < count($customers); $j++) {
+                if ($this->faker->boolean()) {
+                    $product->addCustomer($customers[$j]);
+                }
+            }
 
             $manager->persist($product);
         }
