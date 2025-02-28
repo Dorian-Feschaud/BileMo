@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -14,75 +15,98 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getProducts', 'getCustomers'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts', 'getCustomers'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?string $manufacturer = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['getProducts'])]
     private ?\DateTimeInterface $releaseDate = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?float $price = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?string $color = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?int $capacity = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?float $height = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?float $width = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?float $thickness = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?int $weight = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?string $screen = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?float $screenHeight = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?float $screenWidth = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?int $screenResolution = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?string $backCamera = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?int $backCameraResolution = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?int $frontCameraResolution = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?string $processor = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?int $ram = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?int $batteryCapacity = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?string $network = null;
 
     /**
      * @var Collection<int, Customer>
      */
     #[ORM\ManyToMany(targetEntity: Customer::class, mappedBy: 'products')]
+    #[Groups(['getProductsSuperAdmin'])]
     private Collection $customers;
 
     public function __construct()

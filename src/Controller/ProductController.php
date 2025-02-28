@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,7 +22,16 @@ final class ProductController extends AbstractController{
     {
         $products = $productRepository->findAll();
 
-        $jsonProducts = $serializer->serialize($products, 'json', null);
+        $groups = ['getProducts'];
+
+        if ($this->IsGranted('ROLE_SUPER_ADMIN')) {
+            $groups[] = 'getProductsSuperAdmin';
+        }
+
+        $context = SerializationContext::create()
+                ->setGroups($groups);
+
+        $jsonProducts = $serializer->serialize($products, 'json', $context);
 
         return new JsonResponse($jsonProducts, Response::HTTP_OK, [], true);
     }
