@@ -83,4 +83,14 @@ final class ProductController extends AbstractController{
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('api/products/{id}', name: 'deleteProduct', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un produit')]
+    public function deleteBook(Product $product, EntityManagerInterface $em): JsonResponse
+    {
+        $em->remove($product);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
 }
