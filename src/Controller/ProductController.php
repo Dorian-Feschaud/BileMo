@@ -35,7 +35,7 @@ final class ProductController extends AbstractController{
     }
 
     #[Route('api/products', name: 'createProduct', methods: ['POST'])]
-    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un livre')]
+    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un produit')]
     public function createProduct(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator): JsonResponse
     {
         $product = $serializer->deserialize($request->getContent(), Product::class, 'json');
@@ -48,5 +48,39 @@ final class ProductController extends AbstractController{
         $location = $urlGenerator->generate('product', ['id' => $product->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonProduct, Response::HTTP_CREATED, ['Location' => $location], true);
+    }
+
+    #[Route('api/products/{id}', name: 'updateProduct', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un produit')]
+    public function updateBook(Product $product, Request $request, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    {
+        $newProduct = $serializer->deserialize($request->getContent(), Product::class, 'json');
+
+        $product->setName($newProduct->getName());
+        $product->setManufacturer($newProduct->getManufacturer());
+        $product->setReleaseDate($newProduct->getReleaseDate());
+        $product->setPrice($newProduct->getPrice());
+        $product->setColor($newProduct->getColor());
+        $product->setCapacity($newProduct->getCapacity());
+        $product->setWidth($newProduct->getWidth());
+        $product->setHeight($newProduct->getHeight());
+        $product->setThickness($newProduct->getThickness());
+        $product->setWeight($newProduct->getWeight());
+        $product->setScreen($newProduct->getScreen());
+        $product->setScreenHeight($newProduct->getScreenHeight());
+        $product->setScreenWidth($newProduct->getScreenWidth());
+        $product->setScreenResolution($newProduct->getScreenResolution());
+        $product->setBackCamera($newProduct->getBackCamera());
+        $product->setBackCameraResolution($newProduct->getBackCameraResolution());
+        $product->setFrontCameraResolution($newProduct->getFrontCameraResolution());
+        $product->setProcessor($newProduct->getProcessor());
+        $product->setRam($newProduct->getRam());
+        $product->setBatteryCapacity($newProduct->getBatteryCapacity());
+        $product->setNetwork($newProduct->getNetwork());
+
+        $em->persist($product);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 }
