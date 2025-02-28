@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Customer;
 use App\Repository\CustomerRepository;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
@@ -27,5 +28,19 @@ final class CustomerController extends AbstractController{
         $jsonProducts = $serializer->serialize($customers, 'json', $context);
 
         return new JsonResponse($jsonProducts, Response::HTTP_OK, [], true);
+    }
+
+    #[Route('api/customers/{id}', name: 'customer', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
+    public function getCustomer(Customer $customer, SerializerInterface $serializer): JsonResponse
+    {
+        $groups = ['getCustomers'];
+
+        $context = SerializationContext::create()
+                ->setGroups($groups);
+
+        $jsonCustomer = $serializer->serialize($customer, 'json', $context);
+
+        return new JsonResponse($jsonCustomer, Response::HTTP_OK, [], true);
     }
 }
