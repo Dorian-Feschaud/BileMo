@@ -20,7 +20,7 @@ class AppFixtures extends Fixture
         $this->faker = $this->createFaker();
     }
 
-    protected function createFaker()
+    protected function createFaker(): Generator
     {
         return Factory::create('fr_FR');
     }
@@ -33,7 +33,7 @@ class AppFixtures extends Fixture
         $manager->flush();
     }
 
-    protected function loadUsers($manager): void
+    protected function loadUsers(ObjectManager $manager): void
     {
         $user = new User();
         $user->setEmail('superadmin@example.com');
@@ -54,7 +54,7 @@ class AppFixtures extends Fixture
         $manager->persist($user);
     }
 
-    protected function loadProducts($manager, $count = 20): void
+    protected function loadProducts(ObjectManager $manager, int $count = 20): void
     {
         for ($i = 0; $i < $count; $i++) {
             $product = new Product();
