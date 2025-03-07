@@ -76,6 +76,10 @@ class Customer
         return $this;
     }
 
+    public function setUsers(Collection $users) {
+        $this->users = $users;
+    }
+
     public function removeUser(User $user): static
     {
         if ($this->users->removeElement($user)) {
