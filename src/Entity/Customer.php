@@ -14,30 +14,30 @@ class Customer
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getCustomers', 'getProducts'])]
+    #[Groups(['read:customer', 'read:product'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getCustomers', 'getProducts'])]
+    #[Groups(['read:customer', 'read:product'])]
     private ?string $name = null;
 
     #[ORM\OneToOne(inversedBy: 'customerAdmin', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['getCustomers'])]
+    #[Groups(['read:customer'])]
     private ?User $admin = null;
 
     /**
      * @var Collection<int, User>
      */
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'customer')]
-    #[Groups(['getCustomers'])]
+    #[Groups(['read:customer'])]
     private Collection $users;
 
     /**
      * @var Collection<int, Product>
      */
     #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'customers')]
-    #[Groups(['getCustomers'])]
+    #[Groups(['read:customer'])]
     private Collection $products;
 
     public function __construct()

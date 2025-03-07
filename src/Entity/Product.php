@@ -15,98 +15,98 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getProducts', 'getCustomers'])]
+    #[Groups(['read:product', 'read:customer'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts', 'getCustomers'])]
+    #[Groups(['read:product', 'read:customer'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?string $manufacturer = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?\DateTimeInterface $releaseDate = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?float $price = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?string $color = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?int $capacity = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?float $height = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?float $width = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?float $thickness = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?int $weight = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?string $screen = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?float $screenHeight = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?float $screenWidth = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?int $screenResolution = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?string $backCamera = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?int $backCameraResolution = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?int $frontCameraResolution = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?string $processor = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?int $ram = null;
 
     #[ORM\Column]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?int $batteryCapacity = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts'])]
+    #[Groups(['read:product'])]
     private ?string $network = null;
 
     /**
      * @var Collection<int, Customer>
      */
     #[ORM\ManyToMany(targetEntity: Customer::class, mappedBy: 'products')]
-    #[Groups(['getProductsSuperAdmin'])]
+    #[Groups(['read:products:superadmin'])]
     private Collection $customers;
 
     public function __construct()

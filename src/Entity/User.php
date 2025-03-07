@@ -15,11 +15,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getCustomers'])]
+    #[Groups(['read:customer'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['getCustomers'])]
+    #[Groups(['read:customer'])]
     private ?string $email = null;
 
     /**
