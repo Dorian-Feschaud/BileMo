@@ -83,4 +83,14 @@ final class CustomerController extends AbstractController{
 
         return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, ['Location' => $location], true);
     }
+
+    #[Route('api/customers/{id}', name: 'deleteCustomer', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un client')]
+    public function deleteCustomer(Customer $customer, EntityManagerInterface $em): JsonResponse
+    {
+        $em->remove($customer);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
 }
