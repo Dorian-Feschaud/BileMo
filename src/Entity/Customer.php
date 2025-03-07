@@ -109,6 +109,10 @@ class Customer
         return $this;
     }
 
+    public function setProducts(Collection $products) {
+        $this->products = $products;
+    }
+
     public function removeProduct(Product $product): static
     {
         $this->products->removeElement($product);
