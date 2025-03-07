@@ -3,13 +3,19 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\CustomerRepository;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\DeserializationContext;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class UserController extends AbstractController{
@@ -42,5 +48,44 @@ final class UserController extends AbstractController{
         $jsonUser = $serializer->serialize($user, 'json', $context);
 
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
+    }
+
+    #[Route('api/users', name: 'createUser', methods: ['POST'])]
+    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un utilisateur')]
+    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, UserPasswordHasherInterface $passwordHasher, CustomerRepository $customerRepository): JsonResponse
+    {
+        $groups = ['create:user'];
+
+        $context = DeserializationContext::create()
+                ->setGroups($groups);
+
+        $user = $serializer->deserialize($request->getContent(), User::class, 'json', $context);
+
+        $content = $request->toArray();
+
+        $plainPassword = $content['password'] ?? -1;
+        $password = $passwordHasher->hashPassword($user, $plainPassword);
+        $user->setPassword($password);
+
+        $roles = $content['roles'] ?? -1;
+        $user->setRoles($roles);
+
+        $idCustomer = $content['idCustomer'] ?? -1;
+        $customer = $customerRepository->find($idCustomer);
+        $user->setCustomer($customer);
+
+        $em->persist($user);
+        $em->flush();
+
+        $groups = ['read:user'];
+
+        $context = SerializationContext::create()
+                ->setGroups($groups);
+
+        $jsonUser = $serializer->serialize($user, 'json', $context);
+
+        $location = $urlGenerator->generate('customer', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        return new JsonResponse($jsonUser, Response::HTTP_CREATED, ['Location' => $location], true);
     }
 }
