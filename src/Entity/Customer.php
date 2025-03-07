@@ -21,11 +21,6 @@ class Customer
     #[Groups(['read:customer', 'read:product'])]
     private ?string $name = null;
 
-    #[ORM\OneToOne(inversedBy: 'customerAdmin', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read:customer'])]
-    private ?User $admin = null;
-
     /**
      * @var Collection<int, User>
      */
@@ -63,18 +58,6 @@ class Customer
         return $this;
     }
 
-    public function getAdmin(): ?User
-    {
-        return $this->admin;
-    }
-
-    public function setAdmin(User $admin): static
-    {
-        $this->admin = $admin;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, User>
      */
@@ -91,6 +74,10 @@ class Customer
         }
 
         return $this;
+    }
+
+    public function setUsers(Collection $users) {
+        $this->users = $users;
     }
 
     public function removeUser(User $user): static
@@ -120,6 +107,10 @@ class Customer
         }
 
         return $this;
+    }
+
+    public function setProducts(Collection $products) {
+        $this->products = $products;
     }
 
     public function removeProduct(Product $product): static
