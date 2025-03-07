@@ -15,7 +15,7 @@ final class UserController extends AbstractController{
 
     #[Route('api/users', name: 'users', methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
-    public function getCustomers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    public function getUsers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $users = $userRepository->findAll();
 
