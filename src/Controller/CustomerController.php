@@ -25,7 +25,7 @@ final class CustomerController extends AbstractController{
     {
         $customers = $customerRepository->findAll();
 
-        $groups = ['getCustomers'];
+        $groups = ['read:customer'];
 
         $context = SerializationContext::create()
                 ->setGroups($groups);
@@ -39,7 +39,7 @@ final class CustomerController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getCustomer(Customer $customer, SerializerInterface $serializer): JsonResponse
     {
-        $groups = ['getCustomers'];
+        $groups = ['read:customer'];
 
         $context = SerializationContext::create()
                 ->setGroups($groups);
@@ -72,7 +72,7 @@ final class CustomerController extends AbstractController{
         $em->persist($customer);
         $em->flush();
 
-        $groups = ['getCustomers'];
+        $groups = ['read:customer'];
 
         $context = SerializationContext::create()
                 ->setGroups($groups);
