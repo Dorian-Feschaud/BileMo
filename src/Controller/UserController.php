@@ -88,4 +88,38 @@ final class UserController extends AbstractController{
 
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, ['Location' => $location], true);
     }
+
+    #[Route('api/users/{id}', name: 'updateUser', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un utilisateur')]
+    public function updateUser(User $user, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher, CustomerRepository $customerRepository): JsonResponse
+    {
+        $groups = ['create:user'];
+
+        $context = DeserializationContext::create()
+                ->setGroups($groups);
+
+        $newUser = $serializer->deserialize($request->getContent(), User::class, 'json', $context);
+
+        $content = $request->toArray();
+
+        $plainPassword = $content['password'] ?? -1;
+        $password = $passwordHasher->hashPassword($user, $plainPassword);
+        $user->setPassword($password);
+
+        $roles = $content['roles'] ?? -1;
+        $user->setRoles($roles);
+
+        $idCustomer = $content['idCustomer'] ?? -1;
+        $customer = $customerRepository->find($idCustomer);
+        $user->setCustomer($customer);
+
+        $user->setEmail($newUser->getEmail());
+        $user->setFirstname($newUser->getFirstname());
+        $user->setLastname($newUser->getLastname());
+
+        $em->persist($user);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
 }
