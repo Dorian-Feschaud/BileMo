@@ -57,10 +57,6 @@ final class CustomerController extends AbstractController{
 
         $content = $request->toArray();
 
-        $idAdmin = $content['idAdmin'] ?? -1;
-        $admin = $userRepository->find($idAdmin);
-        $customer->setAdmin($admin);
-
         $idsUsers = $content['idsUsers' ?? -1];
         $users = [];
         foreach ($idsUsers as $idUser) {
