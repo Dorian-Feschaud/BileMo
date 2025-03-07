@@ -84,6 +84,22 @@ final class CustomerController extends AbstractController{
         return new JsonResponse($jsonCustomer, Response::HTTP_CREATED, ['Location' => $location], true);
     }
 
+    #[Route('api/customers/{id}', name: 'updateCustomer', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un client')]
+    public function updateCustomer(Customer $customer, Request $request, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    {
+        $newCustomer = $serializer->deserialize($request->getContent(), Customer::class, 'json');
+
+        $customer->setName($newCustomer->getName());
+        $customer->setUsers($newCustomer->getUsers());
+        $customer->setProducts($newCustomer->getProducts());
+
+        $em->persist($customer);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
     #[Route('api/customers/{id}', name: 'deleteCustomer', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un client')]
     public function deleteCustomer(Customer $customer, EntityManagerInterface $em): JsonResponse
