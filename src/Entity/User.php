@@ -15,11 +15,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['read:user', 'read:customer'])]
+    #[Groups(['create:user', 'read:user', 'read:customer'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['read:user', 'read:customer'])]
+    #[Groups(['create:user', 'read:user', 'read:customer'])]
     private ?string $email = null;
 
     /**
@@ -36,15 +36,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
-    #[Groups(['read:user'])]
+    #[Groups(['create:user', 'read:user'])]
     private ?Customer $customer = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:user'])]
+    #[Groups(['create:user', 'read:user'])]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:user'])]
+    #[Groups(['create:user', 'read:user'])]
     private ?string $lastname = null;
 
     public function getId(): ?int
