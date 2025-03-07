@@ -80,7 +80,7 @@ final class ProductController extends AbstractController{
 
     #[Route('api/products/{id}', name: 'updateProduct', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un produit')]
-    public function updateBook(Product $product, Request $request, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    public function updateProduct(Product $product, Request $request, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
     {
         $newProduct = $serializer->deserialize($request->getContent(), Product::class, 'json');
 
@@ -114,7 +114,7 @@ final class ProductController extends AbstractController{
 
     #[Route('api/products/{id}', name: 'deleteProduct', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un produit')]
-    public function deleteBook(Product $product, EntityManagerInterface $em): JsonResponse
+    public function deleteProduct(Product $product, EntityManagerInterface $em): JsonResponse
     {
         $em->remove($product);
         $em->flush();
