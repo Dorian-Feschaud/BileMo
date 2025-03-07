@@ -34,9 +34,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\OneToOne(mappedBy: 'admin', cascade: ['persist', 'remove'])]
-    private ?Customer $customerAdmin = null;
-
     #[ORM\ManyToOne(inversedBy: 'users')]
     private ?Customer $customer = null;
 
@@ -121,23 +118,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
-    }
-
-    public function getCustomerAdmin(): ?Customer
-    {
-        return $this->customerAdmin;
-    }
-
-    public function setCustomerAdmin(Customer $customerAdmin): static
-    {
-        // set the owning side of the relation if necessary
-        if ($customerAdmin->getAdmin() !== $this) {
-            $customerAdmin->setAdmin($this);
-        }
-
-        $this->customerAdmin = $customerAdmin;
-
-        return $this;
     }
 
     public function getCustomer(): ?Customer

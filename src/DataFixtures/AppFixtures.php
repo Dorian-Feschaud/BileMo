@@ -56,7 +56,7 @@ class AppFixtures extends Fixture
 
             $customer = new Customer();
             $customer->setName('Customer ' . $i);
-            $customer->setAdmin($admin);
+            $customer->addUser($admin);
             
             for ($j = 0; $j < $count; $j++) {
                 $user = new User();
