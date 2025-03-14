@@ -3,8 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
-use App\Repository\CustomerRepository;
-use App\Repository\UserRepository;
+use App\Entity\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializationContext;
@@ -20,64 +19,79 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('api/customers')]
 final class CustomerController extends AbstractController{
 
+    private readonly SerializerInterface $serializer;
+    private readonly EntityManagerInterface $em;
+    private readonly UrlGeneratorInterface $urlGenerator;
+
+    public function __construct(
+        SerializerInterface $serializer,
+        EntityManagerInterface $em,
+        UrlGeneratorInterface $urlGenerator
+    )
+    {
+        $this->serializer = $serializer;
+        $this->em = $em;
+        $this->urlGenerator = $urlGenerator;
+    }
+
     #[Route('', name: 'customers', methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
-    public function getCustomers(CustomerRepository $customerRepository, SerializerInterface $serializer): JsonResponse
+    public function getCustomers(): JsonResponse
     {
-        return new JsonResponse($serializer->serialize($customerRepository->findAll(), 'json', SerializationContext::create()->setGroups(['read:customer'])), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($this->em->getRepository(Customer::class)->findAll(), 'json', SerializationContext::create()->setGroups(['read:customer'])), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'customer', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
-    public function getCustomer(Customer $customer, SerializerInterface $serializer): JsonResponse
+    public function getCustomer(Customer $customer): JsonResponse
     {
-        return new JsonResponse($serializer->serialize($customer, 'json', SerializationContext::create()->setGroups(['read:customer'])), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($customer, 'json', SerializationContext::create()->setGroups(['read:customer'])), Response::HTTP_OK, [], true);
     }
 
     #[Route('', name: 'createCustomer', methods: ['POST'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un client')]
-    public function createCustomer(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, UserRepository $userRepository): JsonResponse
+    public function createCustomer(Request $request): JsonResponse
     {
         $content = $request->toArray();
 
-        $customer = $serializer->deserialize($request->getContent(), Customer::class, 'json');
+        $customer = $this->serializer->deserialize($request->getContent(), Customer::class, 'json');
 
         if (isset($content['idsUsers'])) {
             $users = [];
             foreach ($content['idsUsers'] as $idUser) {
-                $users[] = $userRepository->find($idUser);
+                $users[] = $this->em->getRepository(User::class)->find($idUser);
             }
             $customer->setUsers(new ArrayCollection($users));
         }
         
-        $em->persist($customer);
-        $em->flush();
+        $this->em->persist($customer);
+        $this->em->flush();
 
-        return new JsonResponse($serializer->serialize($customer, 'json', SerializationContext::create()->setGroups(['read:customer'])), Response::HTTP_CREATED, ['Location' => $urlGenerator->generate('customer', ['id' => $customer->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
+        return new JsonResponse($this->serializer->serialize($customer, 'json', SerializationContext::create()->setGroups(['read:customer'])), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('customer', ['id' => $customer->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
     }
 
     #[Route('/{id}', name: 'updateCustomer', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un client')]
-    public function updateCustomer(Customer $customer, Request $request, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    public function updateCustomer(Customer $customer, Request $request): JsonResponse
     {
-        $requestedCustomer = $serializer->deserialize($request->getContent(), Customer::class, 'json');
+        $requestedCustomer = $this->serializer->deserialize($request->getContent(), Customer::class, 'json');
 
         $customer->setName($requestedCustomer->getName());
         $customer->setUsers($requestedCustomer->getUsers());
         $customer->setProducts($requestedCustomer->getProducts());
 
-        $em->persist($customer);
-        $em->flush();
+        $this->em->persist($customer);
+        $this->em->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/{id}', name: 'deleteCustomer', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un client')]
-    public function deleteCustomer(Customer $customer, EntityManagerInterface $em): JsonResponse
+    public function deleteCustomer(Customer $customer): JsonResponse
     {
-        $em->remove($customer);
-        $em->flush();
+        $this->em->remove($customer);
+        $this->em->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
