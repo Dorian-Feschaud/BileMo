@@ -15,17 +15,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['read:customer'])]
+    #[Groups(['create:user', 'read:user', 'read:customer'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['read:customer'])]
+    #[Groups(['create:user', 'read:user', 'read:customer'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(['read:user', 'read:customer'])]
     private array $roles = [];
 
     /**
@@ -35,7 +36,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
+    #[Groups(['create:user', 'read:user'])]
     private ?Customer $customer = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['create:user', 'read:user'])]
+    private ?string $firstname = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['create:user', 'read:user'])]
+    private ?string $lastname = null;
 
     public function getId(): ?int
     {
@@ -128,6 +138,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCustomer(?Customer $customer): static
     {
         $this->customer = $customer;
+
+        return $this;
+    }
+
+    public function getFirstname(): ?string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstname(string $firstname): static
+    {
+        $this->firstname = $firstname;
+
+        return $this;
+    }
+
+    public function getLastname(): ?string
+    {
+        return $this->lastname;
+    }
+
+    public function setLastname(string $lastname): static
+    {
+        $this->lastname = $lastname;
 
         return $this;
     }

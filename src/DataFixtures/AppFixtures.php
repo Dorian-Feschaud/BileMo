@@ -38,6 +38,8 @@ class AppFixtures extends Fixture
     protected function loadSuperAdmin(ObjectManager $manager): void
     {
         $user = new User();
+        $user->setFirstname('Super');
+        $user->setLastname('Admin');
         $user->setEmail('superadmin@example.com');
         $user->setRoles(['ROLE_SUPER_ADMIN']);
         $user->setPassword($this->userPasswordHasher->hashPassword($user, 'password'));
@@ -49,6 +51,8 @@ class AppFixtures extends Fixture
         $customers = [];
         for ($i = 0; $i < $count; $i++) {
             $admin = new User();
+            $admin->setFirstname('Admin');
+            $admin->setLastname('Customer ' . $i);
             $admin->setEmail('admin' . $i . '@example.com');
             $admin->setRoles(['ROLE_ADMIN']);
             $admin->setPassword($this->userPasswordHasher->hashPassword($admin, 'password'));
@@ -60,6 +64,8 @@ class AppFixtures extends Fixture
             
             for ($j = 0; $j < $count; $j++) {
                 $user = new User();
+                $user->setFirstname($this->faker->firstName());
+                $user->setLastname($this->faker->lastName());
                 $user->setEmail('user' . $j . '@customer' . $i . '.com');
                 $user->setRoles(['ROLE_USER']);
                 $user->setPassword($this->userPasswordHasher->hashPassword($user, 'password'));
