@@ -20,37 +20,13 @@ final class ProductController extends AbstractController{
     #[Route('api/products', name: 'products', methods: ['GET'])]
     public function getProducts(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
-        $products = $productRepository->findAll();
-
-        $groups = ['read:product'];
-
-        if ($this->IsGranted('ROLE_SUPER_ADMIN')) {
-            $groups[] = 'read:product:superadmin';
-        }
-
-        $context = SerializationContext::create()
-                ->setGroups($groups);
-
-        $jsonProducts = $serializer->serialize($products, 'json', $context);
-
-        return new JsonResponse($jsonProducts, Response::HTTP_OK, [], true);
+        return new JsonResponse($serializer->serialize($productRepository->findAll(), 'json', SerializationContext::create()->setGroups($this->isGranted('ROLE_SUPER_ADMIN') ? ['read:product', 'read:product:superadmin'] : ['read:product'])), Response::HTTP_OK, [], true);
     }
 
     #[Route('api/products/{id}', name: 'product', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function getProduct(Product $product, SerializerInterface $serializer): JsonResponse
     {
-        $groups = ['read:product'];
-
-        if ($this->IsGranted('ROLE_SUPER_ADMIN')) {
-            $groups[] = 'read:product:superadmin';
-        }
-
-        $context = SerializationContext::create()
-                ->setGroups($groups);
-
-        $jsonProduct = $serializer->serialize($product, 'json', $context);
-
-        return new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
+        return new JsonResponse($serializer->serialize($product, 'json', SerializationContext::create()->setGroups($this->isGranted('ROLE_SUPER_ADMIN') ? ['read:product', 'read:product:superadmin'] : ['read:product'])), Response::HTTP_OK, [], true);
     }
 
     #[Route('api/products', name: 'createProduct', methods: ['POST'])]
@@ -62,49 +38,36 @@ final class ProductController extends AbstractController{
         $em->persist($product);
         $em->flush();
 
-        $groups = ['read:product'];
-
-        if ($this->IsGranted('ROLE_SUPER_ADMIN')) {
-            $groups[] = 'read:product:superadmin';
-        }
-
-        $context = SerializationContext::create()
-                ->setGroups($groups);
-
-        $jsonProduct = $serializer->serialize($product, 'json', $context);
-
-        $location = $urlGenerator->generate('product', ['id' => $product->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        return new JsonResponse($jsonProduct, Response::HTTP_CREATED, ['Location' => $location], true);
+        return new JsonResponse($serializer->serialize($product, 'json', SerializationContext::create()->setGroups($this->isGranted('ROLE_SUPER_ADMIN') ? ['read:product', 'read:product:superadmin'] : ['read:product'])), Response::HTTP_CREATED, ['Location' => $urlGenerator->generate('product', ['id' => $product->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
     }
 
     #[Route('api/products/{id}', name: 'updateProduct', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un produit')]
     public function updateProduct(Product $product, Request $request, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
     {
-        $newProduct = $serializer->deserialize($request->getContent(), Product::class, 'json');
+        $requestedProduct = $serializer->deserialize($request->getContent(), Product::class, 'json');
 
-        $product->setName($newProduct->getName());
-        $product->setManufacturer($newProduct->getManufacturer());
-        $product->setReleaseDate($newProduct->getReleaseDate());
-        $product->setPrice($newProduct->getPrice());
-        $product->setColor($newProduct->getColor());
-        $product->setCapacity($newProduct->getCapacity());
-        $product->setWidth($newProduct->getWidth());
-        $product->setHeight($newProduct->getHeight());
-        $product->setThickness($newProduct->getThickness());
-        $product->setWeight($newProduct->getWeight());
-        $product->setScreen($newProduct->getScreen());
-        $product->setScreenHeight($newProduct->getScreenHeight());
-        $product->setScreenWidth($newProduct->getScreenWidth());
-        $product->setScreenResolution($newProduct->getScreenResolution());
-        $product->setBackCamera($newProduct->getBackCamera());
-        $product->setBackCameraResolution($newProduct->getBackCameraResolution());
-        $product->setFrontCameraResolution($newProduct->getFrontCameraResolution());
-        $product->setProcessor($newProduct->getProcessor());
-        $product->setRam($newProduct->getRam());
-        $product->setBatteryCapacity($newProduct->getBatteryCapacity());
-        $product->setNetwork($newProduct->getNetwork());
+        $product->setName($requestedProduct->getName());
+        $product->setManufacturer($requestedProduct->getManufacturer());
+        $product->setReleaseDate($requestedProduct->getReleaseDate());
+        $product->setPrice($requestedProduct->getPrice());
+        $product->setColor($requestedProduct->getColor());
+        $product->setCapacity($requestedProduct->getCapacity());
+        $product->setWidth($requestedProduct->getWidth());
+        $product->setHeight($requestedProduct->getHeight());
+        $product->setThickness($requestedProduct->getThickness());
+        $product->setWeight($requestedProduct->getWeight());
+        $product->setScreen($requestedProduct->getScreen());
+        $product->setScreenHeight($requestedProduct->getScreenHeight());
+        $product->setScreenWidth($requestedProduct->getScreenWidth());
+        $product->setScreenResolution($requestedProduct->getScreenResolution());
+        $product->setBackCamera($requestedProduct->getBackCamera());
+        $product->setBackCameraResolution($requestedProduct->getBackCameraResolution());
+        $product->setFrontCameraResolution($requestedProduct->getFrontCameraResolution());
+        $product->setProcessor($requestedProduct->getProcessor());
+        $product->setRam($requestedProduct->getRam());
+        $product->setBatteryCapacity($requestedProduct->getBatteryCapacity());
+        $product->setNetwork($requestedProduct->getNetwork());
 
         $em->persist($product);
         $em->flush();
