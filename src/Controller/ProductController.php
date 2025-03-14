@@ -22,10 +22,10 @@ final class ProductController extends AbstractController{
     {
         $products = $productRepository->findAll();
 
-        $groups = ['read:products'];
+        $groups = ['read:product'];
 
         if ($this->IsGranted('ROLE_SUPER_ADMIN')) {
-            $groups[] = 'read:products:superadmin';
+            $groups[] = 'read:product:superadmin';
         }
 
         $context = SerializationContext::create()
@@ -39,10 +39,10 @@ final class ProductController extends AbstractController{
     #[Route('api/products/{id}', name: 'product', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function getProduct(Product $product, SerializerInterface $serializer): JsonResponse
     {
-        $groups = ['read:products'];
+        $groups = ['read:product'];
 
         if ($this->IsGranted('ROLE_SUPER_ADMIN')) {
-            $groups[] = 'read:products:superadmin';
+            $groups[] = 'read:product:superadmin';
         }
 
         $context = SerializationContext::create()
@@ -62,10 +62,10 @@ final class ProductController extends AbstractController{
         $em->persist($product);
         $em->flush();
 
-        $groups = ['read:products'];
+        $groups = ['read:product'];
 
         if ($this->IsGranted('ROLE_SUPER_ADMIN')) {
-            $groups[] = 'read:products:superadmin';
+            $groups[] = 'read:product:superadmin';
         }
 
         $context = SerializationContext::create()

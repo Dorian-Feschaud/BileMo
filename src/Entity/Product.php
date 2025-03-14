@@ -106,7 +106,7 @@ class Product
      * @var Collection<int, Customer>
      */
     #[ORM\ManyToMany(targetEntity: Customer::class, mappedBy: 'products')]
-    #[Groups(['read:products:superadmin'])]
+    #[Groups(['read:product:superadmin'])]
     private Collection $customers;
 
     public function __construct()
