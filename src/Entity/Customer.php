@@ -76,7 +76,10 @@ class Customer
         return $this;
     }
 
-    public function setUsers(Collection $users) {
+    /**
+     * @param Collection<int, User> $users
+     */
+    public function setUsers(Collection $users):void {
         $this->users = $users;
     }
 
@@ -109,7 +112,10 @@ class Customer
         return $this;
     }
 
-    public function setProducts(Collection $products) {
+    /**
+     * @param Collection<int, Product> $products
+     */
+    public function setProducts(Collection $products):void {
         $this->products = $products;
     }
 
