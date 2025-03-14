@@ -79,8 +79,10 @@ class Customer
     /**
      * @param Collection<int, User> $users
      */
-    public function setUsers(Collection $users):void {
+    public function setUsers(Collection $users): static {
         $this->users = $users;
+
+        return $this;
     }
 
     public function removeUser(User $user): static
@@ -115,8 +117,10 @@ class Customer
     /**
      * @param Collection<int, Product> $products
      */
-    public function setProducts(Collection $products):void {
+    public function setProducts(Collection $products): static {
         $this->products = $products;
+
+        return $this;
     }
 
     public function removeProduct(Product $product): static
