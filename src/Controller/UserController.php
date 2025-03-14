@@ -18,104 +18,72 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[Route('api/users')]
 final class UserController extends AbstractController{
 
-    #[Route('api/users', name: 'users', methods: ['GET'])]
+    #[Route('', name: 'users', methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getUsers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        $users = $userRepository->findAll();
-
-        $groups = ['read:user'];
-
-        $context = SerializationContext::create()
-                ->setGroups($groups);
-
-        $jsonUsers = $serializer->serialize($users, 'json', $context);
-
-        return new JsonResponse($jsonUsers, Response::HTTP_OK, [], true);
+        return new JsonResponse($serializer->serialize($userRepository->findAll(), 'json', SerializationContext::create()->setGroups(['read:user'])), Response::HTTP_OK, [], true);
     }
 
-    #[Route('api/users/{id}', name: 'user', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[Route('/{id}', name: 'user', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getDetailsUser(User $user, SerializerInterface $serializer): JsonResponse
     {
-        $groups = ['read:user'];
-
-        $context = SerializationContext::create()
-                ->setGroups($groups);
-
-        $jsonUser = $serializer->serialize($user, 'json', $context);
-
-        return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
+        return new JsonResponse($serializer->serialize($user, 'json', SerializationContext::create()->setGroups(['read:user'])), Response::HTTP_OK, [], true);
     }
 
-    #[Route('api/users', name: 'createUser', methods: ['POST'])]
+    #[Route('', name: 'createUser', methods: ['POST'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un utilisateur')]
     public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, UserPasswordHasherInterface $passwordHasher, CustomerRepository $customerRepository): JsonResponse
     {
-        $groups = ['create:user'];
-
-        $context = DeserializationContext::create()
-                ->setGroups($groups);
-
-        $user = $serializer->deserialize($request->getContent(), User::class, 'json', $context);
-
         $content = $request->toArray();
 
-        $plainPassword = $content['password'] ?? -1;
-        $password = $passwordHasher->hashPassword($user, $plainPassword);
-        $user->setPassword($password);
+        $user = $serializer->deserialize($request->getContent(), User::class, 'json', DeserializationContext::create()->setGroups(['create:user']));
+        
+        if (isset($content['roles'])) {
+            $user->setRoles($content['roles']);
+        }
 
-        $roles = $content['roles'] ?? -1;
-        $user->setRoles($roles);
-
-        $idCustomer = $content['idCustomer'] ?? -1;
-        $customer = $customerRepository->find($idCustomer);
-        $user->setCustomer($customer);
+        if (isset($content['password'])) {
+            $user->setPassword($passwordHasher->hashPassword($user, $content['password']));
+        }
+        
+        if (isset($content['idCustomer'])) {
+            $user->setCustomer($customerRepository->find($content['idCustomer']));
+        } 
 
         $em->persist($user);
         $em->flush();
 
-        $groups = ['read:user'];
-
-        $context = SerializationContext::create()
-                ->setGroups($groups);
-
-        $jsonUser = $serializer->serialize($user, 'json', $context);
-
-        $location = $urlGenerator->generate('customer', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        return new JsonResponse($jsonUser, Response::HTTP_CREATED, ['Location' => $location], true);
+        return new JsonResponse($serializer->serialize($user, 'json', SerializationContext::create()->setGroups(['read:user'])), Response::HTTP_CREATED, ['Location' => $urlGenerator->generate('customer', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
     }
 
-    #[Route('api/users/{id}', name: 'updateUser', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[Route('/{id}', name: 'updateUser', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un utilisateur')]
     public function updateUser(User $user, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher, CustomerRepository $customerRepository): JsonResponse
     {
-        $groups = ['create:user'];
-
-        $context = DeserializationContext::create()
-                ->setGroups($groups);
-
-        $newUser = $serializer->deserialize($request->getContent(), User::class, 'json', $context);
-
         $content = $request->toArray();
 
-        $plainPassword = $content['password'] ?? -1;
-        $password = $passwordHasher->hashPassword($user, $plainPassword);
-        $user->setPassword($password);
+        $requestedUser = $serializer->deserialize($request->getContent(), User::class, 'json', DeserializationContext::create()->setGroups(['create:user']));
 
-        $roles = $content['roles'] ?? -1;
-        $user->setRoles($roles);
+        $user->setEmail($requestedUser->getEmail());
+        $user->setFirstname($requestedUser->getFirstname());
+        $user->setLastname($requestedUser->getLastname());
 
-        $idCustomer = $content['idCustomer'] ?? -1;
-        $customer = $customerRepository->find($idCustomer);
-        $user->setCustomer($customer);
+        if (isset($content['roles'])) {
+            $user->setRoles($content['roles']);
+        }
 
-        $user->setEmail($newUser->getEmail());
-        $user->setFirstname($newUser->getFirstname());
-        $user->setLastname($newUser->getLastname());
+        if (isset($content['password'])) {
+            $user->setPassword($passwordHasher->hashPassword($user, $content['password']));
+        }
+        
+        if (isset($content['idCustomer'])) {
+            $user->setCustomer($customerRepository->find($content['idCustomer']));
+        }        
 
         $em->persist($user);
         $em->flush();
@@ -123,7 +91,7 @@ final class UserController extends AbstractController{
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
-    #[Route('api/users/{id}', name: 'deleteUser', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[Route('{id}', name: 'deleteUser', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un utilisateur')]
     public function deleteUser(User $user, EntityManagerInterface $em): JsonResponse
     {
