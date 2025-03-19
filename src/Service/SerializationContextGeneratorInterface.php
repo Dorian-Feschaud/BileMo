@@ -3,11 +3,25 @@
 namespace App\Service;
 
 use JMS\Serializer\SerializationContext;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class SerializationContextGeneratorInterface {
-    
-    public function createContext(String $entityClass, String $method): SerializationContext
+
+    private $accessGranted;
+
+    public function __construct(Security $security)
     {
-        return SerializationContext::create()->setGroups([$entityClass . ':' . $method]);
+          $this->accessGranted = $security->isGranted('ROLE_SUPER_ADMIN');
+    }
+    
+    public function createContext(String $method,String $entityClass): SerializationContext
+    {
+        $groups = [$method . ':' . $entityClass];
+        
+        if ($this->accessGranted) {
+            $groups[] = $method . ':' . $entityClass . ':' . 'superadmin';
+        }
+
+        return SerializationContext::create()->setGroups($groups);
     }
 }
