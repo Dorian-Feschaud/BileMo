@@ -4,9 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Entity\User;
+use App\Service\SerializationContextGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\DeserializationContext;
-use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,32 +24,35 @@ final class UserController extends AbstractController{
     private readonly EntityManagerInterface $em;
     private readonly UrlGeneratorInterface $urlGenerator;
     private readonly UserPasswordHasherInterface $passwordHasher;
+    private readonly SerializationContextGeneratorInterface $serializationContextGenerator;
 
     public function __construct(
         SerializerInterface $serializer,
         EntityManagerInterface $em,
         UrlGeneratorInterface $urlGenerator,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        SerializationContextGeneratorInterface $serializationContextGenerator
     )
     {
         $this->serializer = $serializer;
         $this->em = $em;
         $this->urlGenerator = $urlGenerator;
         $this->passwordHasher = $passwordHasher;
+        $this->serializationContextGenerator = $serializationContextGenerator;
     }
 
     #[Route('', name: 'users', methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getUsers(): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->em->getRepository(User::class)->findAll(), 'json', SerializationContext::create()->setGroups(['read:user'])), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($this->em->getRepository(User::class)->findAll(), 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'user', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getDetailsUser(User $user): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($user, 'json', SerializationContext::create()->setGroups(['read:user'])), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($user, 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_OK, [], true);
     }
 
     #[Route('', name: 'createUser', methods: ['POST'])]
@@ -75,7 +78,7 @@ final class UserController extends AbstractController{
         $this->em->persist($user);
         $this->em->flush();
 
-        return new JsonResponse($this->serializer->serialize($user, 'json', SerializationContext::create()->setGroups(['read:user'])), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('customer', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
+        return new JsonResponse($this->serializer->serialize($user, 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('customer', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
     }
 
     #[Route('/{id}', name: 'updateUser', requirements: ['id' => '\d+'], methods: ['PUT'])]
