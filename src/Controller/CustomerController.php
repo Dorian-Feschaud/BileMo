@@ -19,22 +19,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('api/customers')]
 final class CustomerController extends AbstractController{
 
-    private readonly SerializerInterface $serializer;
-    private readonly EntityManagerInterface $em;
-    private readonly UrlGeneratorInterface $urlGenerator;
-    private readonly SerializationContextGeneratorInterface $serializationContextGenerator;
-
     public function __construct(
-        SerializerInterface $serializer,
-        EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator,
-        SerializationContextGeneratorInterface $serializationContextGenerator
+        private readonly SerializerInterface $serializer,
+        private readonly EntityManagerInterface $em,
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly SerializationContextGeneratorInterface $serializationContextGenerator
     )
     {
-        $this->serializer = $serializer;
-        $this->em = $em;
-        $this->urlGenerator = $urlGenerator;
-        $this->serializationContextGenerator = $serializationContextGenerator;
     }
 
     #[Route('', name: 'customers', methods: ['GET'])]
