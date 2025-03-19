@@ -3,10 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
+use App\Entity\Product;
 use App\Entity\User;
 use App\Service\SerializationContextGeneratorInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\DeserializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -46,17 +48,10 @@ final class CustomerController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un client')]
     public function createCustomer(Request $request): JsonResponse
     {
-        $content = $request->toArray();
+        $customer = $this->serializer->deserialize($request->getContent(), Customer::class, 'json', DeserializationContext::create()->setGroups(['create:customer']));
 
-        $customer = $this->serializer->deserialize($request->getContent(), Customer::class, 'json');
-
-        if (isset($content['idsUsers'])) {
-            $users = [];
-            foreach ($content['idsUsers'] as $idUser) {
-                $users[] = $this->em->getRepository(User::class)->find($idUser);
-            }
-            $customer->setUsers(new ArrayCollection($users));
-        }
+        $customer->setUsers(new ArrayCollection());
+        $customer->setProducts(new ArrayCollection());
         
         $this->em->persist($customer);
         $this->em->flush();
@@ -68,11 +63,9 @@ final class CustomerController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un client')]
     public function updateCustomer(Customer $customer, Request $request): JsonResponse
     {
-        $requestedCustomer = $this->serializer->deserialize($request->getContent(), Customer::class, 'json');
+        $requestedCustomer = $this->serializer->deserialize($request->getContent(), Customer::class, 'json', DeserializationContext::create()->setGroups(['create:customer']));
 
         $customer->setName($requestedCustomer->getName());
-        $customer->setUsers($requestedCustomer->getUsers());
-        $customer->setProducts($requestedCustomer->getProducts());
 
         $this->em->persist($customer);
         $this->em->flush();
