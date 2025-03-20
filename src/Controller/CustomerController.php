@@ -3,8 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
-use App\Entity\Product;
-use App\Entity\User;
+use App\Service\EntityFinderInterface;
 use App\Service\SerializationContextGeneratorInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,7 +24,8 @@ final class CustomerController extends AbstractController{
         private readonly SerializerInterface $serializer,
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly SerializationContextGeneratorInterface $serializationContextGenerator
+        private readonly SerializationContextGeneratorInterface $serializationContextGenerator,
+        private readonly EntityFinderInterface $ef
     )
     {
     }
@@ -34,7 +34,7 @@ final class CustomerController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getCustomers(Request $request): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->em->getRepository(Customer::class)->findByPageLimit($request->get('page', 1), $request->get('limit', 10)), 'json', $this->serializationContextGenerator->createContext('read', 'customer')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($this->ef->getEntities($this->em, Customer::class, $request), 'json', $this->serializationContextGenerator->createContext('read', 'customer')), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'customer', requirements: ['id' => '\d+'], methods: ['GET'])]

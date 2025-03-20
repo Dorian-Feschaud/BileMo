@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Entity\User;
+use App\Service\EntityFinderInterface;
 use App\Service\SerializationContextGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\DeserializationContext;
@@ -25,7 +26,8 @@ final class UserController extends AbstractController{
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly SerializationContextGeneratorInterface $serializationContextGenerator
+        private readonly SerializationContextGeneratorInterface $serializationContextGenerator,
+        private readonly EntityFinderInterface $ef
     )
     {
     }
@@ -34,7 +36,7 @@ final class UserController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getUsers(Request $request): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->em->getRepository(User::class)->findByPageLimit($request->get('page', 1), $request->get('limit', 10)), 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($this->ef->getEntities($this->em, User::class, $request), 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'user', requirements: ['id' => '\d+'], methods: ['GET'])]

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Service\EntityFinderInterface;
 use App\Service\SerializationContextGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializerInterface;
@@ -21,7 +22,8 @@ final class ProductController extends AbstractController{
         private readonly SerializerInterface $serializer,
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly SerializationContextGeneratorInterface $serializationContextGenerator
+        private readonly SerializationContextGeneratorInterface $serializationContextGenerator,
+        private readonly EntityFinderInterface $ef
     )
     {
     }
@@ -29,7 +31,7 @@ final class ProductController extends AbstractController{
     #[Route('', name: 'products', methods: ['GET'])]
     public function getProducts(Request $request): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->em->getRepository(Product::class)->findByPageLimit($request->get('page', 1), $request->get('limit', 10)), 'json', $this->serializationContextGenerator->createContext('read', 'product')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($this->ef->getEntities($this->em, Product::class, $request), 'json', $this->serializationContextGenerator->createContext('read', 'product')), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'product', requirements: ['id' => '\d+'], methods: ['GET'])]
