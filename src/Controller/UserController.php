@@ -32,9 +32,9 @@ final class UserController extends AbstractController{
 
     #[Route('', name: 'users', methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
-    public function getUsers(): JsonResponse
+    public function getUsers(Request $request): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->em->getRepository(User::class)->findAll(), 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($this->em->getRepository(User::class)->findByPageLimit($request->get('page', 1), $request->get('limit', 10)), 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'user', requirements: ['id' => '\d+'], methods: ['GET'])]
