@@ -27,9 +27,9 @@ final class ProductController extends AbstractController{
     }
 
     #[Route('', name: 'products', methods: ['GET'])]
-    public function getProducts(): JsonResponse
+    public function getProducts(Request $request): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->em->getRepository(Product::class)->findAll(), 'json', $this->serializationContextGenerator->createContext('read', 'product')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($this->em->getRepository(Product::class)->findByPageLimit($request->get('page', 1), $request->get('limit', 10)), 'json', $this->serializationContextGenerator->createContext('read', 'product')), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'product', requirements: ['id' => '\d+'], methods: ['GET'])]
