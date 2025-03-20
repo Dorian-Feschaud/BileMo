@@ -32,9 +32,9 @@ final class CustomerController extends AbstractController{
 
     #[Route('', name: 'customers', methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
-    public function getCustomers(): JsonResponse
+    public function getCustomers(Request $request): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->em->getRepository(Customer::class)->findAll(), 'json', $this->serializationContextGenerator->createContext('read', 'customer')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize($this->em->getRepository(Customer::class)->findByPageLimit($request->get('page', 1), $request->get('limit', 10)), 'json', $this->serializationContextGenerator->createContext('read', 'customer')), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'customer', requirements: ['id' => '\d+'], methods: ['GET'])]
