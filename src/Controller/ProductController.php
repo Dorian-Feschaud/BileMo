@@ -3,10 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Product;
-use App\Service\EntityFinderInterface;
-use App\Service\SerializationContextGeneratorInterface;
+use App\Service\CustomSerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,11 +17,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class ProductController extends AbstractController{
 
     public function __construct(
-        private readonly SerializerInterface $serializer,
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly SerializationContextGeneratorInterface $serializationContextGenerator,
-        private readonly EntityFinderInterface $ef
+        private readonly CustomSerializerInterface $serializer
     )
     {
     }
@@ -31,32 +27,32 @@ final class ProductController extends AbstractController{
     #[Route('', name: 'products', methods: ['GET'])]
     public function getProducts(Request $request): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->ef->getEntities($this->em, Product::class, $request), 'json', $this->serializationContextGenerator->createContext('read', 'product')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize(Product::class, $request, null), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'product', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function getProduct(Product $product): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($product, 'json', $this->serializationContextGenerator->createContext('read', 'product')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize(Product::class, null, $product), Response::HTTP_OK, [], true);
     }
 
     #[Route('', name: 'createProduct', methods: ['POST'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un produit')]
     public function createProduct(Request $request): JsonResponse
     {
-        $product = $this->serializer->deserialize($request->getContent(), Product::class, 'json');
+        $product = $this->serializer->deserialize(Product::class, $request);
 
         $this->em->persist($product);
         $this->em->flush();
 
-        return new JsonResponse($this->serializer->serialize($product, 'json', $this->serializationContextGenerator->createContext('read', 'product')), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('product', ['id' => $product->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
+        return new JsonResponse($this->serializer->serialize(Product::class, null, $product), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('product', ['id' => $product->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
     }
 
     #[Route('/{id}', name: 'updateProduct', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un produit')]
     public function updateProduct(Product $product, Request $request): JsonResponse
     {
-        $requestedProduct = $this->serializer->deserialize($request->getContent(), Product::class, 'json');
+        $requestedProduct = $this->serializer->deserialize(Product::class, $request);
 
         $product->setName($requestedProduct->getName());
         $product->setManufacturer($requestedProduct->getManufacturer());

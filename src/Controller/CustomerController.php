@@ -3,12 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
-use App\Service\EntityFinderInterface;
-use App\Service\SerializationContextGeneratorInterface;
+use App\Service\CustomSerializerInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\DeserializationContext;
-use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,11 +19,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class CustomerController extends AbstractController{
 
     public function __construct(
-        private readonly SerializerInterface $serializer,
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly SerializationContextGeneratorInterface $serializationContextGenerator,
-        private readonly EntityFinderInterface $ef
+        private readonly CustomSerializerInterface $serializer
     )
     {
     }
@@ -34,21 +30,21 @@ final class CustomerController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getCustomers(Request $request): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->ef->getEntities($this->em, Customer::class, $request), 'json', $this->serializationContextGenerator->createContext('read', 'customer')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize(Customer::class, $request, null), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'customer', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getCustomer(Customer $customer): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($customer, 'json', $this->serializationContextGenerator->createContext('read', 'customer')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize(Customer::class, null, $customer), Response::HTTP_OK, [], true);
     }
 
     #[Route('', name: 'createCustomer', methods: ['POST'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un client')]
     public function createCustomer(Request $request): JsonResponse
     {
-        $customer = $this->serializer->deserialize($request->getContent(), Customer::class, 'json', DeserializationContext::create()->setGroups(['create:customer']));
+        $customer = $this->serializer->deserialize(Customer::class, $request);
 
         $customer->setUsers(new ArrayCollection());
         $customer->setProducts(new ArrayCollection());
@@ -56,14 +52,14 @@ final class CustomerController extends AbstractController{
         $this->em->persist($customer);
         $this->em->flush();
 
-        return new JsonResponse($this->serializer->serialize($customer, 'json', $this->serializationContextGenerator->createContext('read', 'customer')), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('customer', ['id' => $customer->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
+        return new JsonResponse($this->serializer->serialize(Customer::class, null, $customer), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('customer', ['id' => $customer->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
     }
 
     #[Route('/{id}', name: 'updateCustomer', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un client')]
     public function updateCustomer(Customer $customer, Request $request): JsonResponse
     {
-        $requestedCustomer = $this->serializer->deserialize($request->getContent(), Customer::class, 'json', DeserializationContext::create()->setGroups(['create:customer']));
+        $requestedCustomer = $this->serializer->deserialize(Customer::class, $request);
 
         $customer->setName($requestedCustomer->getName());
 

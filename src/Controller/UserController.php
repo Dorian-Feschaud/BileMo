@@ -4,11 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Entity\User;
-use App\Service\EntityFinderInterface;
-use App\Service\SerializationContextGeneratorInterface;
+use App\Service\CustomSerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\DeserializationContext;
-use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,12 +20,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class UserController extends AbstractController{
 
     public function __construct(
-        private readonly SerializerInterface $serializer,
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly SerializationContextGeneratorInterface $serializationContextGenerator,
-        private readonly EntityFinderInterface $ef
+        private readonly CustomSerializerInterface $serializer
     )
     {
     }
@@ -36,14 +32,14 @@ final class UserController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getUsers(Request $request): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($this->ef->getEntities($this->em, User::class, $request), 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize(User::class, $request, null), Response::HTTP_OK, [], true);
     }
 
     #[Route('/{id}', name: 'user', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getDetailsUser(User $user): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($user, 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_OK, [], true);
+        return new JsonResponse($this->serializer->serialize(User::class, null, $user), Response::HTTP_OK, [], true);
     }
 
     #[Route('', name: 'createUser', methods: ['POST'])]
@@ -52,7 +48,7 @@ final class UserController extends AbstractController{
     {
         $content = $request->toArray();
 
-        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', DeserializationContext::create()->setGroups(['create:user']));
+        $user = $this->serializer->deserialize(User::class, $request);
 
         if (isset($content['roles'])) {
             $user->setRoles($content['roles']);
@@ -69,7 +65,7 @@ final class UserController extends AbstractController{
         $this->em->persist($user);
         $this->em->flush();
 
-        return new JsonResponse($this->serializer->serialize($user, 'json', $this->serializationContextGenerator->createContext('read', 'user')), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('customer', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
+        return new JsonResponse($this->serializer->serialize(User::class, null, $user), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('customer', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
     }
 
     #[Route('/{id}', name: 'updateUser', requirements: ['id' => '\d+'], methods: ['PUT'])]
@@ -78,7 +74,7 @@ final class UserController extends AbstractController{
     {
         $content = $request->toArray();
 
-        $requestedUser = $this->serializer->deserialize($request->getContent(), User::class, 'json', DeserializationContext::create()->setGroups(['create:user']));
+        $requestedUser = $this->serializer->deserialize(User::class, $request);
 
         $user->setEmail($requestedUser->getEmail());
         $user->setFirstname($requestedUser->getFirstname());
