@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -20,26 +21,32 @@ class Product
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product', 'read:customer'])]
+    #[Assert\NotBlank()]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product'])]
+    #[Assert\NotBlank()]
     private ?string $manufacturer = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?\DateTimeInterface $releaseDate = null;
 
     #[ORM\Column]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?float $price = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product'])]
+    #[Assert\NotBlank()]
     private ?string $color = null;
 
     #[ORM\Column]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?int $capacity = null;
 
     #[ORM\Column]
@@ -48,58 +55,72 @@ class Product
 
     #[ORM\Column]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?float $width = null;
 
     #[ORM\Column]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?float $thickness = null;
 
     #[ORM\Column]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?int $weight = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product'])]
+    #[Assert\NotBlank()]
     private ?string $screen = null;
 
     #[ORM\Column]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?float $screenHeight = null;
 
     #[ORM\Column]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?float $screenWidth = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?int $screenResolution = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product'])]
+    #[Assert\NotBlank()]
     private ?string $backCamera = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?int $backCameraResolution = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?int $frontCameraResolution = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product'])]
+    #[Assert\NotBlank()]
     private ?string $processor = null;
 
     #[ORM\Column]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?int $ram = null;
 
     #[ORM\Column]
     #[Groups(['read:product'])]
+    #[Assert\NotNull()]
     private ?int $batteryCapacity = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:product'])]
+    #[Assert\NotBlank()]
     private ?string $network = null;
 
     /**
