@@ -15,6 +15,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('api/users')]
 final class UserController extends AbstractController{
@@ -23,7 +24,8 @@ final class UserController extends AbstractController{
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly CustomSerializerInterface $serializer
+        private readonly CustomSerializerInterface $serializer,
+        private readonly ValidatorInterface $validator
     )
     {
     }
@@ -60,7 +62,13 @@ final class UserController extends AbstractController{
         
         if (isset($content['idCustomer'])) {
             $user->setCustomer($this->em->getRepository(Customer::class)->find($content['idCustomer']));
-        } 
+        }
+
+        $errors = $this->validator->validate($user);
+
+        if ($errors->count() > 0) {
+            return new JsonResponse($this->serializer->serializeErrors($errors), Response::HTTP_BAD_REQUEST, [], true);
+        }
 
         $this->em->persist($user);
         $this->em->flush();
@@ -90,7 +98,13 @@ final class UserController extends AbstractController{
         
         if (isset($content['idCustomer'])) {
             $user->setCustomer($this->em->getRepository(Customer::class)->find($content['idCustomer']));
-        }        
+        }
+
+        $errors = $this->validator->validate($user);
+
+        if ($errors->count() > 0) {
+            return new JsonResponse($this->serializer->serializeErrors($errors), Response::HTTP_BAD_REQUEST, [], true);
+        }
 
         $this->em->persist($user);
         $this->em->flush();

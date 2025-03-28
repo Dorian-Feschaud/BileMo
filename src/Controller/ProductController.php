@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('api/products')]
 final class ProductController extends AbstractController{
@@ -19,7 +20,8 @@ final class ProductController extends AbstractController{
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly CustomSerializerInterface $serializer
+        private readonly CustomSerializerInterface $serializer,
+        private readonly ValidatorInterface $validator
     )
     {
     }
@@ -41,6 +43,12 @@ final class ProductController extends AbstractController{
     public function createProduct(Request $request): JsonResponse
     {
         $product = $this->serializer->deserialize(Product::class, $request);
+
+        $errors = $this->validator->validate($product);
+
+        if ($errors->count() > 0) {
+            return new JsonResponse($this->serializer->serializeErrors($errors), Response::HTTP_BAD_REQUEST, [], true);
+        }
 
         $this->em->persist($product);
         $this->em->flush();
@@ -75,6 +83,12 @@ final class ProductController extends AbstractController{
         $product->setRam($requestedProduct->getRam());
         $product->setBatteryCapacity($requestedProduct->getBatteryCapacity());
         $product->setNetwork($requestedProduct->getNetwork());
+
+        $errors = $this->validator->validate($product);
+
+        if ($errors->count() > 0) {
+            return new JsonResponse($this->serializer->serializeErrors($errors), Response::HTTP_BAD_REQUEST, [], true);
+        }
 
         $this->em->persist($product);
         $this->em->flush();
