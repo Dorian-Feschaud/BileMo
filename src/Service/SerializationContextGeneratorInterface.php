@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use JMS\Serializer\DeserializationContext;
 use JMS\Serializer\SerializationContext;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -14,14 +15,30 @@ class SerializationContextGeneratorInterface {
           $this->accessGranted = $security->isGranted('ROLE_SUPER_ADMIN');
     }
     
-    public function createContext(String $method,String $entityClass): SerializationContext
+    public function createContext(String $method, String $entityClass): mixed
     {
-        $groups = [$method . ':' . $entityClass];
+        $entityName = $this->getCleanEntityName($entityClass);
+
+        $groups = [$method . ':' . strtolower($entityName)];
         
         if ($this->accessGranted) {
-            $groups[] = $method . ':' . $entityClass . ':' . 'superadmin';
+            $groups[] = $method . ':' . $entityName . ':' . 'superadmin';
         }
 
-        return SerializationContext::create()->setGroups($groups);
+        switch ($method) {
+            case 'read':
+                return SerializationContext::create()->setGroups($groups);
+            case 'create':
+                return DeserializationContext::create()->setGroups($groups);
+            default :
+                return null;
+        }
+    }
+
+    protected function getCleanEntityName(String $entityClass): String
+    {
+        $tmp = explode('\\', $entityClass);
+
+        return strtolower(end($tmp));
     }
 }
