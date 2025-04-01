@@ -20,106 +20,106 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product', 'read:customer'])]
+    #[Groups(['create:product', 'read:product', 'read:customer'])]
     #[Assert\NotBlank()]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotBlank()]
     private ?string $manufacturer = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?\DateTimeInterface $releaseDate = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?float $price = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotBlank()]
     private ?string $color = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?int $capacity = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     private ?float $height = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?float $width = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?float $thickness = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?int $weight = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotBlank()]
     private ?string $screen = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?float $screenHeight = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?float $screenWidth = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?int $screenResolution = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotBlank()]
     private ?string $backCamera = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?int $backCameraResolution = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?int $frontCameraResolution = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotBlank()]
     private ?string $processor = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?int $ram = null;
 
     #[ORM\Column]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotNull()]
     private ?int $batteryCapacity = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:product'])]
+    #[Groups(['create:product', 'read:product'])]
     #[Assert\NotBlank()]
     private ?string $network = null;
 

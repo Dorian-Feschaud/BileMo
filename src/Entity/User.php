@@ -15,7 +15,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['create:user', 'read:user', 'read:customer'])]
+    #[Groups(['read:user', 'read:customer'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
@@ -36,7 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
-    #[Groups(['create:user', 'read:user'])]
+    #[Groups(['read:user'])]
     private ?Customer $customer = null;
 
     #[ORM\Column(length: 255)]
