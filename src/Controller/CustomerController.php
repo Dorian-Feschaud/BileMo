@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Service\CustomSerializerInterface;
+use App\Service\CustomValidatorInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\DeserializationContext;
@@ -21,7 +22,8 @@ final class CustomerController extends AbstractController{
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly CustomSerializerInterface $serializer
+        private readonly CustomSerializerInterface $serializer,
+        private readonly CustomValidatorInterface $validator
     )
     {
     }
@@ -48,6 +50,8 @@ final class CustomerController extends AbstractController{
 
         $customer->setUsers(new ArrayCollection());
         $customer->setProducts(new ArrayCollection());
+
+        $this->validator->validate($customer);
         
         $this->em->persist($customer);
         $this->em->flush();
@@ -62,6 +66,8 @@ final class CustomerController extends AbstractController{
         $requestedCustomer = $this->serializer->deserialize(Customer::class, $request);
 
         $customer->setName($requestedCustomer->getName());
+
+        $this->validator->validate($customer);
 
         $this->em->persist($customer);
         $this->em->flush();

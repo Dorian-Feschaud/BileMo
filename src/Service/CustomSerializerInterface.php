@@ -5,6 +5,7 @@ namespace App\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 class CustomSerializerInterface {
 
@@ -32,5 +33,9 @@ class CustomSerializerInterface {
     public function deserialize(String $entityName, Request $request): mixed
     {
         return $this->serializer->deserialize($request->getContent(), $entityName, 'json', $this->serializationContextGenerator->createContext('create', $entityName));
+    }
+
+    public function serializeErrors(ConstraintViolationListInterface $errors) {
+        return $this->serializer->serialize($errors, 'json');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Service\CustomSerializerInterface;
+use App\Service\CustomValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,7 +20,8 @@ final class ProductController extends AbstractController{
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly CustomSerializerInterface $serializer
+        private readonly CustomSerializerInterface $serializer,
+        private readonly CustomValidatorInterface $validator
     )
     {
     }
@@ -41,6 +43,8 @@ final class ProductController extends AbstractController{
     public function createProduct(Request $request): JsonResponse
     {
         $product = $this->serializer->deserialize(Product::class, $request);
+
+        $this->validator->validate($product);
 
         $this->em->persist($product);
         $this->em->flush();
@@ -75,6 +79,8 @@ final class ProductController extends AbstractController{
         $product->setRam($requestedProduct->getRam());
         $product->setBatteryCapacity($requestedProduct->getBatteryCapacity());
         $product->setNetwork($requestedProduct->getNetwork());
+
+        $this->validator->validate($product);
 
         $this->em->persist($product);
         $this->em->flush();

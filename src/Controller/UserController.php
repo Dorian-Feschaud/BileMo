@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Customer;
 use App\Entity\User;
 use App\Service\CustomSerializerInterface;
+use App\Service\CustomValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\DeserializationContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +24,8 @@ final class UserController extends AbstractController{
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly CustomSerializerInterface $serializer
+        private readonly CustomSerializerInterface $serializer,
+        private readonly CustomValidatorInterface $validator
     )
     {
     }
@@ -60,7 +62,9 @@ final class UserController extends AbstractController{
         
         if (isset($content['idCustomer'])) {
             $user->setCustomer($this->em->getRepository(Customer::class)->find($content['idCustomer']));
-        } 
+        }
+
+        $this->validator->validate($user);
 
         $this->em->persist($user);
         $this->em->flush();
@@ -90,7 +94,9 @@ final class UserController extends AbstractController{
         
         if (isset($content['idCustomer'])) {
             $user->setCustomer($this->em->getRepository(Customer::class)->find($content['idCustomer']));
-        }        
+        }
+
+        $this->validator->validate($user);
 
         $this->em->persist($user);
         $this->em->flush();
