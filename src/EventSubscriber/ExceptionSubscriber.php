@@ -15,19 +15,9 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
 
         if ($exception instanceof HttpException) {
-            $data = [
-                'status' => $exception->getStatusCode(),
-                'message' => $exception->getMessage()
-            ];
-
-            $event->setResponse(new JsonResponse($data));
+            $event->setResponse(new JsonResponse($exception->getMessage(), $exception->getStatusCode(), [], true));
       } else {
-            $data = [
-                'status' => 500,
-                'message' => $exception->getMessage()
-            ];
-
-            $event->setResponse(new JsonResponse($data));
+            $event->setResponse(new JsonResponse($exception->getMessage(), 500, [], true));
       }
    }
 
