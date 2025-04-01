@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Service\CustomSerializerInterface;
+use App\Service\CustomValidatorInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\DeserializationContext;
@@ -14,7 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('api/customers')]
 final class CustomerController extends AbstractController{
@@ -23,7 +23,7 @@ final class CustomerController extends AbstractController{
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly CustomSerializerInterface $serializer,
-        private readonly ValidatorInterface $validator
+        private readonly CustomValidatorInterface $validator
     )
     {
     }
@@ -51,11 +51,7 @@ final class CustomerController extends AbstractController{
         $customer->setUsers(new ArrayCollection());
         $customer->setProducts(new ArrayCollection());
 
-        $errors = $this->validator->validate($customer);
-
-        if ($errors->count() > 0) {
-            return new JsonResponse($this->serializer->serializeErrors($errors), Response::HTTP_BAD_REQUEST, [], true);
-        }
+        $this->validator->validate($customer);
         
         $this->em->persist($customer);
         $this->em->flush();
@@ -71,11 +67,7 @@ final class CustomerController extends AbstractController{
 
         $customer->setName($requestedCustomer->getName());
 
-        $errors = $this->validator->validate($customer);
-
-        if ($errors->count() > 0) {
-            return new JsonResponse($this->serializer->serializeErrors($errors), Response::HTTP_BAD_REQUEST, [], true);
-        }
+        $this->validator->validate($customer);
 
         $this->em->persist($customer);
         $this->em->flush();

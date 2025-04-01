@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Customer;
 use App\Entity\User;
 use App\Service\CustomSerializerInterface;
+use App\Service\CustomValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\DeserializationContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,7 +16,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('api/users')]
 final class UserController extends AbstractController{
@@ -25,7 +25,7 @@ final class UserController extends AbstractController{
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly CustomSerializerInterface $serializer,
-        private readonly ValidatorInterface $validator
+        private readonly CustomValidatorInterface $validator
     )
     {
     }
@@ -64,11 +64,7 @@ final class UserController extends AbstractController{
             $user->setCustomer($this->em->getRepository(Customer::class)->find($content['idCustomer']));
         }
 
-        $errors = $this->validator->validate($user);
-
-        if ($errors->count() > 0) {
-            return new JsonResponse($this->serializer->serializeErrors($errors), Response::HTTP_BAD_REQUEST, [], true);
-        }
+        $this->validator->validate($user);
 
         $this->em->persist($user);
         $this->em->flush();
@@ -100,11 +96,7 @@ final class UserController extends AbstractController{
             $user->setCustomer($this->em->getRepository(Customer::class)->find($content['idCustomer']));
         }
 
-        $errors = $this->validator->validate($user);
-
-        if ($errors->count() > 0) {
-            return new JsonResponse($this->serializer->serializeErrors($errors), Response::HTTP_BAD_REQUEST, [], true);
-        }
+        $this->validator->validate($user);
 
         $this->em->persist($user);
         $this->em->flush();
