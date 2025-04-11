@@ -33,6 +33,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * @return User[] Returns an array of User objects
+     */
     public function findByPageLimit(int $page = 1, int $limit = 10): array
     {
         $queryBuiler = $this->createQueryBuilder('u')

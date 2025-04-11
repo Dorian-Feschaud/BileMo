@@ -16,6 +16,9 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
+    /**
+     * @return Product[] Returns an array of Product objects
+     */
     public function findByPageLimit(int $page = 1, int $limit = 10): array
     {
         $queryBuiler = $this->createQueryBuilder('p')
