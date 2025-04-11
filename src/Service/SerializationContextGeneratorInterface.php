@@ -15,10 +15,8 @@ class SerializationContextGeneratorInterface {
           $this->accessGranted = $security->isGranted('ROLE_SUPER_ADMIN');
     }
     
-    public function createContext(String $method, String $entityClass): mixed
+    public function createContext(String $method, String $entityName): mixed
     {
-        $entityName = $this->getCleanEntityName($entityClass);
-
         $groups = [$method . ':' . strtolower($entityName)];
         
         if ($this->accessGranted) {
@@ -33,12 +31,5 @@ class SerializationContextGeneratorInterface {
             default :
                 return null;
         }
-    }
-
-    protected function getCleanEntityName(String $entityClass): String
-    {
-        $tmp = explode('\\', $entityClass);
-
-        return strtolower(end($tmp));
     }
 }

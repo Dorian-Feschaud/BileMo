@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 #[Route('api/customers')]
 final class CustomerController extends AbstractController{
@@ -23,7 +24,8 @@ final class CustomerController extends AbstractController{
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly CustomSerializerInterface $serializer,
-        private readonly CustomValidatorInterface $validator
+        private readonly CustomValidatorInterface $validator,
+        private readonly TagAwareCacheInterface $cache
     )
     {
     }
@@ -52,6 +54,8 @@ final class CustomerController extends AbstractController{
         $customer->setProducts(new ArrayCollection());
 
         $this->validator->validate($customer);
+
+        $this->cache->invalidateTags(['customerCache']);
         
         $this->em->persist($customer);
         $this->em->flush();
@@ -69,6 +73,8 @@ final class CustomerController extends AbstractController{
 
         $this->validator->validate($customer);
 
+        $this->cache->invalidateTags(['customerCache']);
+
         $this->em->persist($customer);
         $this->em->flush();
 
@@ -79,6 +85,8 @@ final class CustomerController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un client')]
     public function deleteCustomer(Customer $customer): JsonResponse
     {
+        $this->cache->invalidateTags(['customerCache']);
+
         $this->em->remove($customer);
         $this->em->flush();
 

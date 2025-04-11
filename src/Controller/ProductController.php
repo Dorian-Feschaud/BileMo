@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 #[Route('api/products')]
 final class ProductController extends AbstractController{
@@ -21,7 +22,8 @@ final class ProductController extends AbstractController{
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly CustomSerializerInterface $serializer,
-        private readonly CustomValidatorInterface $validator
+        private readonly CustomValidatorInterface $validator,
+        private readonly TagAwareCacheInterface $cache
     )
     {
     }
@@ -46,8 +48,11 @@ final class ProductController extends AbstractController{
 
         $this->validator->validate($product);
 
+        $this->cache->invalidateTags(['productCache']);
+        
         $this->em->persist($product);
         $this->em->flush();
+
 
         return new JsonResponse($this->serializer->serialize(Product::class, null, $product), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('product', ['id' => $product->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
     }
@@ -82,8 +87,11 @@ final class ProductController extends AbstractController{
 
         $this->validator->validate($product);
 
+        $this->cache->invalidateTags(['productCache']);
+
         $this->em->persist($product);
         $this->em->flush();
+
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -92,6 +100,8 @@ final class ProductController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un produit')]
     public function deleteProduct(Product $product): JsonResponse
     {
+        $this->cache->invalidateTags(['productCache']);
+
         $this->em->remove($product);
         $this->em->flush();
 

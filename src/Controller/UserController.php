@@ -16,6 +16,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 #[Route('api/users')]
 final class UserController extends AbstractController{
@@ -25,7 +26,8 @@ final class UserController extends AbstractController{
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly CustomSerializerInterface $serializer,
-        private readonly CustomValidatorInterface $validator
+        private readonly CustomValidatorInterface $validator,
+        private readonly TagAwareCacheInterface $cache
     )
     {
     }
@@ -66,6 +68,8 @@ final class UserController extends AbstractController{
 
         $this->validator->validate($user);
 
+        $this->cache->invalidateTags(['userCache']);
+
         $this->em->persist($user);
         $this->em->flush();
 
@@ -98,6 +102,8 @@ final class UserController extends AbstractController{
 
         $this->validator->validate($user);
 
+        $this->cache->invalidateTags(['userCache']);
+
         $this->em->persist($user);
         $this->em->flush();
 
@@ -108,6 +114,8 @@ final class UserController extends AbstractController{
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un utilisateur')]
     public function deleteUser(User $user): JsonResponse
     {
+        $this->cache->invalidateTags(['userCache']);
+
         $this->em->remove($user);
         $this->em->flush();
 
