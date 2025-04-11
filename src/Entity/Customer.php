@@ -6,9 +6,25 @@ use App\Repository\CustomerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[Hateoas\Relation(
+    'self',
+    href: new Hateoas\Route(name: 'customer', parameters: ['id' => 'expr(object.getId())']),
+    exclusion: new Hateoas\Exclusion(groups: ['read:customer'])
+)]
+#[Hateoas\Relation(
+    'update',
+    href: new Hateoas\Route(name: 'updateCustomer', parameters: ['id' => 'expr(object.getId())']),
+    exclusion: new Hateoas\Exclusion(groups: ['read:customer'], excludeIf: 'expr(not is_granted("ROLE_SUPER_ADMIN"))')
+)]
+#[Hateoas\Relation(
+    'delete',
+    href: new Hateoas\Route(name: 'deleteCustomer', parameters: ['id' => 'expr(object.getId())']),
+    exclusion: new Hateoas\Exclusion(groups: ['read:customer'], excludeIf: 'expr(not is_granted("ROLE_SUPER_ADMIN"))')
+)]
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 class Customer
 {
