@@ -8,7 +8,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 class SerializationContextGeneratorInterface {
 
-    private $accessGranted;
+    private bool $accessGranted;
 
     public function __construct(Security $security)
     {
