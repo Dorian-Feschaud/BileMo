@@ -7,7 +7,8 @@ use App\Entity\User;
 use App\Service\CustomSerializerInterface;
 use App\Service\CustomValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use JMS\Serializer\DeserializationContext;
+use Nelmio\ApiDocBundle\Attribute\Model;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,6 +33,30 @@ final class UserController extends AbstractController{
     {
     }
 
+    /**
+     * Permet de récupérer la liste des utilisateurs.
+     */
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne la liste des utilisateurs',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: User::class, groups: ['read:user']))
+        )
+    )]
+    #[OA\Parameter(
+        name: 'page',
+        in: 'query',
+        description: 'La page que l\'on veut récupérer',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Parameter(
+        name: 'limit',
+        in: 'query',
+        description: 'Le nombre d\'éléments que l\'on veut récupérer',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Tag(name: 'Utilisateurs')]
     #[Route('', name: 'users', methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getUsers(Request $request): JsonResponse
@@ -39,6 +64,15 @@ final class UserController extends AbstractController{
         return new JsonResponse($this->serializer->serialize(User::class, $request, null), Response::HTTP_OK, [], true);
     }
 
+    /**
+     * Permet de récupérer les informations d'un seul utilisateur.
+     */
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne les informations d\'un utilisateur',
+        content: new Model(type: User::class, groups: ['read:user'])
+    )]
+    #[OA\Tag(name: 'Utilisateurs')]
     #[Route('/{id}', name: 'user', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getDetailsUser(User $user): JsonResponse
@@ -46,6 +80,18 @@ final class UserController extends AbstractController{
         return new JsonResponse($this->serializer->serialize(User::class, null, $user), Response::HTTP_OK, [], true);
     }
 
+    /**
+     * Permet de créer un nouvel utilisateur.
+     */
+    #[OA\Response(
+        response: 201,
+        description: 'Créer un nouvel utilisateur et le retourne',
+        content: new Model(type: User::class, groups: ['read:user'])
+    )]
+    #[OA\RequestBody(
+        content: new Model(type: User::class, groups: ['create:user'])
+    )]
+    #[OA\Tag(name: 'Utilisateurs')]
     #[Route('', name: 'createUser', methods: ['POST'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un utilisateur')]
     public function createUser(Request $request): JsonResponse
@@ -76,6 +122,17 @@ final class UserController extends AbstractController{
         return new JsonResponse($this->serializer->serialize(User::class, null, $user), Response::HTTP_CREATED, ['Location' => $this->urlGenerator->generate('customer', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL)], true);
     }
 
+    /**
+     * Permet de modifier un utilisateur.
+     */
+    #[OA\Response(
+        response: 204,
+        description: 'Modifier un utilisateur',
+    )]
+    #[OA\RequestBody(
+        content: new Model(type: User::class, groups: ['create:user'])
+    )]
+    #[OA\Tag(name: 'Utilisateurs')]
     #[Route('/{id}', name: 'updateUser', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un utilisateur')]
     public function updateUser(User $user, Request $request): JsonResponse
@@ -110,6 +167,14 @@ final class UserController extends AbstractController{
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Permet de supprimer un utilisateur.
+     */
+    #[OA\Response(
+        response: 204,
+        description: 'Supprimer un utilisateur',
+    )]
+    #[OA\Tag(name: 'Utilisateurs')]
     #[Route('{id}', name: 'deleteUser', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un utilisateur')]
     public function deleteUser(User $user): JsonResponse
