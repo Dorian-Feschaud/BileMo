@@ -429,6 +429,15 @@ class Product
         return $this;
     }
 
+    /**
+     * @param Collection<int, Customer> $customers
+     */
+    public function setCustomers(Collection $customers): static {
+        $this->customers = $customers;
+
+        return $this;
+    }
+
     public function removeCustomer(Customer $customer): static
     {
         if ($this->customers->removeElement($customer)) {

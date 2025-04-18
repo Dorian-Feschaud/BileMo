@@ -38,7 +38,8 @@
         "doctrine/doctrine-fixtures-bundle": "^4.0",
         "friendsofphp/php-cs-fixer": "^3.69",
         "phpstan/phpstan": "^2.1",
-        "symfony/maker-bundle": "^1.62"
+        "symfony/maker-bundle": "^1.62",
+        "zenstruck/foundry": "^2.4"
     },
     "config": {
         "allow-plugins": {
