@@ -34,6 +34,7 @@ class CustomSerializerInterface {
         else {
             $page = $request->get('page', 1);
             $limit = $request->get('limit', 10);
+            // @phpstan-ignore argument.templateType, method.notFound
             $dataToSerialize = $this->em->getRepository($entityName)->findByPageLimit($page, $limit);
             $cacheName .= 's-' . $page . '-' . $limit;
         }
