@@ -61,10 +61,10 @@ class AppFixtures extends Fixture
         // Admin Users
         UserFactory::createMany(
             5,
-            static function(int $i) {
+            static function() {
                 return [
                     'roles' => ["ROLE_ADMIN"],
-                    'customer' => CustomerFactory::find(['name' => "Customer $i"])
+                    'customer' => CustomerFactory::random()
                 ];
             }
         );
