@@ -113,7 +113,7 @@ final class CustomerController extends AbstractController{
      * Permet de modifier un client.
      */
     #[OA\Response(
-        response: 204,
+        response: 200,
         description: 'Modifier un client',
     )]
     #[OA\RequestBody(
@@ -135,7 +135,7 @@ final class CustomerController extends AbstractController{
         $this->em->persist($customer);
         $this->em->flush();
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(null, Response::HTTP_OK);
     }
 
     /**

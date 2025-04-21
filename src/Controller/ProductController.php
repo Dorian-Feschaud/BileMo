@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Customer;
 use App\Entity\Product;
 use App\Service\CustomSerializerInterface;
 use App\Service\CustomValidatorInterface;
@@ -108,7 +109,7 @@ final class ProductController extends AbstractController{
      * Permet de modifier un produit.
      */
     #[OA\Response(
-        response: 204,
+        response: 200,
         description: 'Modifier un produit',
     )]
     #[OA\RequestBody(
@@ -151,7 +152,7 @@ final class ProductController extends AbstractController{
         $this->em->flush();
 
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(null, Response::HTTP_OK);
     }
 
     /**

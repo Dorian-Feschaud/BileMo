@@ -126,7 +126,7 @@ final class UserController extends AbstractController{
      * Permet de modifier un utilisateur.
      */
     #[OA\Response(
-        response: 204,
+        response: 200,
         description: 'Modifier un utilisateur',
     )]
     #[OA\RequestBody(
@@ -164,7 +164,7 @@ final class UserController extends AbstractController{
         $this->em->persist($user);
         $this->em->flush();
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(null, Response::HTTP_OK);
     }
 
     /**
