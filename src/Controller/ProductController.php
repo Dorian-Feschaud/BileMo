@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Customer;
 use App\Entity\Product;
 use App\Service\CustomSerializerInterface;
 use App\Service\CustomValidatorInterface;
@@ -108,7 +109,7 @@ final class ProductController extends AbstractController{
      * Permet de modifier un produit.
      */
     #[OA\Response(
-        response: 204,
+        response: 200,
         description: 'Modifier un produit',
     )]
     #[OA\RequestBody(
@@ -151,7 +152,7 @@ final class ProductController extends AbstractController{
         $this->em->flush();
 
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(null, Response::HTTP_OK);
     }
 
     /**
@@ -169,6 +170,41 @@ final class ProductController extends AbstractController{
         $this->cache->invalidateTags(['productCache']);
 
         $this->em->remove($product);
+        $this->em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Permet de lier un produit à un ou plusieurs clients.
+     */
+    #[OA\Response(
+        response: 204,
+        description: 'Lier un produit à un ou plusieurs client',
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            example: '{"customers": [1, 2, 3]}'
+        )
+    )]
+    #[OA\Tag(name: 'Produits')]
+    #[Route('/{id}/addCustomers', name: 'addCustomers', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour lier un produit à un ou plusieurs clients')]
+    public function addCustomers(Product $product, Request $request): JsonResponse
+    {
+        $customers = $this->em->getRepository(Customer::class)->findBy(['id' => $request->toArray()['customers'] ?? []]);
+        foreach ($customers as $customer) {
+            if (!$product->getCustomers()->contains($customer)) {
+                $product->addCustomer($customer);
+                $customer->addProduct($product);
+            }
+        }
+
+        $this->validator->validate($product);
+
+        $this->cache->invalidateTags(['productCache']);
+
+        $this->em->persist($product);
         $this->em->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);

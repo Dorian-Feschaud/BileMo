@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -56,7 +57,12 @@ final class CustomerController extends AbstractController{
     )]
     #[OA\Tag(name: 'Clients')]
     #[Route('', name: 'customers', methods: ['GET'])]
-    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN") or ' .
+            '(is_granted("ROLE_ADMIN"))'
+        ),
+    message: 'Vous ne disposez pas des droits pour voir ces données')]
     public function getCustomers(Request $request): JsonResponse
     {
         return new JsonResponse($this->serializer->serialize(Customer::class, $request, null), Response::HTTP_OK, [], true);
@@ -72,7 +78,14 @@ final class CustomerController extends AbstractController{
     )]
     #[OA\Tag(name: 'Clients')]
     #[Route('/{id}', name: 'customer', requirements: ['id' => '\d+'], methods: ['GET'])]
-    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN") or ' .
+            '(is_granted("ROLE_ADMIN") and user.getCustomer().getId() === subject.getId())'
+        ),
+        subject: 'customer',
+        message: 'Vous ne disposez pas des droits pour voir ces données'
+    )]
     public function getCustomer(Customer $customer): JsonResponse
     {
         return new JsonResponse($this->serializer->serialize(Customer::class, null, $customer), Response::HTTP_OK, [], true);
@@ -113,7 +126,7 @@ final class CustomerController extends AbstractController{
      * Permet de modifier un client.
      */
     #[OA\Response(
-        response: 204,
+        response: 200,
         description: 'Modifier un client',
     )]
     #[OA\RequestBody(
@@ -121,7 +134,14 @@ final class CustomerController extends AbstractController{
     )]
     #[OA\Tag(name: 'Clients')]
     #[Route('/{id}', name: 'updateCustomer', requirements: ['id' => '\d+'], methods: ['PUT'])]
-    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un client')]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN") or ' .
+            '(is_granted("ROLE_ADMIN") and user.getCustomer().getId() === subject.getId())'
+        ),
+        subject: 'customer',
+        message: 'Vous ne disposez pas des droits pour modifier un client'
+    )]
     public function updateCustomer(Customer $customer, Request $request): JsonResponse
     {
         $requestedCustomer = $this->serializer->deserialize(Customer::class, $request);
@@ -135,7 +155,7 @@ final class CustomerController extends AbstractController{
         $this->em->persist($customer);
         $this->em->flush();
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(null, Response::HTTP_OK);
     }
 
     /**

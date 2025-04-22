@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,7 +16,8 @@ class CustomSerializerInterface {
         private readonly EntityManagerInterface $em,
         private readonly SerializerInterface $serializer,
         private readonly SerializationContextGeneratorInterface $serializationContextGenerator,
-        private readonly TagAwareCacheInterface $cache
+        private readonly TagAwareCacheInterface $cache,
+        private readonly UserTokenInterface $userToken
     )
     {
         
@@ -35,7 +37,7 @@ class CustomSerializerInterface {
             $page = $request->get('page', 1);
             $limit = $request->get('limit', 10);
             // @phpstan-ignore argument.templateType, method.notFound
-            $dataToSerialize = $this->em->getRepository($entityName)->findByPageLimit($page, $limit);
+            $dataToSerialize = $this->em->getRepository($entityName)->findByPageLimit($page, $limit, $this->userToken->getCustomerId());
             $cacheName .= 's-' . $page . '-' . $limit;
         }
 

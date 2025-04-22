@@ -75,7 +75,7 @@ class AppFixtures extends Fixture
             static function() {
                 return [
                     'roles' => ["ROLE_USER"],
-                    'customer' => CustomerFactory::random()
+                    'customer' => CustomerFactory::find(['name' => "Customer " . random_int(0, 5)])
                 ];
             }
         );
