@@ -19,7 +19,7 @@ class CustomerRepository extends ServiceEntityRepository
     /**
      * @return Customer[] Returns an array of Customer objects
      */
-    public function findByPageLimit(int $page = 1, int $limit = 10, ?int $customerId): array
+    public function findByPageLimit(int $page = 1, int $limit = 10, ?int $customerId = null): array
     {
         if ($customerId != null) {
             $queryBuiler = $this->createQueryBuilder('c')

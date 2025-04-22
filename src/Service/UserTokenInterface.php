@@ -27,7 +27,7 @@ class UserTokenInterface {
         }
     }
 
-    public function getCustomerId()
+    public function getCustomerId(): ?int
     {
         $currentUser = $this->getCurrentUser();
         if ($currentUser instanceof User) {
