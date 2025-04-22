@@ -221,7 +221,7 @@ final class UserController extends AbstractController{
         )
     )]
     #[OA\Tag(name: 'Utilisateurs')]
-    #[Route('/{id}', name: 'resetPassword', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[Route('/{id}/resetPassword', name: 'resetPassword', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted(
         new Expression(
             'is_granted("ROLE_SUPER_ADMIN") or ' .
@@ -233,7 +233,12 @@ final class UserController extends AbstractController{
     )]
     public function resetPassword(User $user, Request $request): JsonResponse
     {
-        $user->setPassword($this->passwordHasher->hashPassword($user, $request->toArray()['password'] ?? ''));
+        $password = $request->toArray()['password'] ?? '';
+        $hashPassword = '';
+        if ($password != null) {
+            $hashPassword = $this->passwordHasher->hashPassword($user, $password);
+        }
+        $user->setPassword($hashPassword);
 
         $this->validator->validate($user);
 
@@ -258,7 +263,7 @@ final class UserController extends AbstractController{
         )
     )]
     #[OA\Tag(name: 'Utilisateurs')]
-    #[Route('/{id}', name: 'updateRoles', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[Route('/{id}/updateRoles', name: 'updateRoles', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted(
         new Expression(
             'is_granted("ROLE_SUPER_ADMIN")'
@@ -289,11 +294,11 @@ final class UserController extends AbstractController{
     )]
     #[OA\RequestBody(
         content: new OA\JsonContent(
-            example: '{"customer": int}'
+            example: '{"customer": 0}'
         )
     )]
     #[OA\Tag(name: 'Utilisateurs')]
-    #[Route('/{id}', name: 'updateUserCustomer', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[Route('/{id}/updateCustomer', name: 'updateCustomer', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted(
         new Expression(
             'is_granted("ROLE_SUPER_ADMIN")'
@@ -301,9 +306,9 @@ final class UserController extends AbstractController{
         subject: 'user',
         message: 'Vous ne disposez pas des droits pour modifier le client d\'un utilisateur'
     )]
-    public function updateUserCustomer(User $user, Request $request): JsonResponse
+    public function updateCustomer(User $user, Request $request): JsonResponse
     {
-        $user->setCustomer($request->toArray()['customer'] ?? []);
+        $user->setCustomer($this->em->getRepository(Customer::class)->find($request->toArray()['customer'] ?? -1));
 
         $this->validator->validate($user);
 

@@ -24,6 +24,24 @@ use Symfony\Component\Validator\Constraints as Assert;
     exclusion: new Hateoas\Exclusion(groups: ['read:user'])
 )]
 #[Hateoas\Relation(
+    'resetPassword',
+    href: new Hateoas\Route(name: 'resetPassword', parameters: ['id' => 'expr(object.getId())']),
+    attributes: ["method" => "PUT"],
+    exclusion: new Hateoas\Exclusion(groups: ['read:user'])
+)]
+#[Hateoas\Relation(
+    'updateRoles',
+    href: new Hateoas\Route(name: 'updateRoles', parameters: ['id' => 'expr(object.getId())']),
+    attributes: ["method" => "PUT"],
+    exclusion: new Hateoas\Exclusion(groups: ['read:user'], excludeIf: 'expr(not is_granted("ROLE_SUPER_ADMIN"))')
+)]
+#[Hateoas\Relation(
+    'updateCustomer',
+    href: new Hateoas\Route(name: 'updateCustomer', parameters: ['id' => 'expr(object.getId())']),
+    attributes: ["method" => "PUT"],
+    exclusion: new Hateoas\Exclusion(groups: ['read:user'], excludeIf: 'expr(not is_granted("ROLE_SUPER_ADMIN"))')
+)]
+#[Hateoas\Relation(
     'delete',
     href: new Hateoas\Route(name: 'deleteUser', parameters: ['id' => 'expr(object.getId())']),
     attributes: ["method" => "DELETE"],
