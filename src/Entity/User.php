@@ -6,6 +6,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation\Groups;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -20,13 +21,13 @@ use Symfony\Component\Validator\Constraints as Assert;
     'update',
     href: new Hateoas\Route(name: 'updateUser', parameters: ['id' => 'expr(object.getId())']),
     attributes: ["method" => "PUT"],
-    exclusion: new Hateoas\Exclusion(groups: ['read:user'], excludeIf: 'expr(not is_granted("ROLE_SUPER_ADMIN"))')
+    exclusion: new Hateoas\Exclusion(groups: ['read:user'])
 )]
 #[Hateoas\Relation(
     'delete',
     href: new Hateoas\Route(name: 'deleteUser', parameters: ['id' => 'expr(object.getId())']),
     attributes: ["method" => "DELETE"],
-    exclusion: new Hateoas\Exclusion(groups: ['read:user'], excludeIf: 'expr(not is_granted("ROLE_SUPER_ADMIN"))')
+    exclusion: new Hateoas\Exclusion(groups: ['read:user'], excludeIf: 'expr(not is_granted("ROLE_SUPER_ADMIN") and not is_granted("ROLE_ADMIN"))')
 )]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]

@@ -36,11 +36,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * @return User[] Returns an array of User objects
      */
-    public function findByPageLimit(int $page = 1, int $limit = 10): array
+    public function findByPageLimit(int $page = 1, int $limit = 10, ?int $customerId): array
     {
-        $queryBuiler = $this->createQueryBuilder('u')
+        if ($customerId != null) {
+            $queryBuiler = $this->createQueryBuilder('u')
+                ->where('u.customer = :customerId')
+                ->setParameter('customerId', $customerId)
+                ->setFirstResult(($page - 1) * $limit)
+                ->setMaxResults($limit);
+        }
+        else {
+            $queryBuiler = $this->createQueryBuilder('u')
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit);
+        }
 
         return $queryBuiler->getQuery()->getResult();
     }

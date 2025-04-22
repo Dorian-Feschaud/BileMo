@@ -6,10 +6,12 @@ use App\Entity\Customer;
 use App\Entity\User;
 use App\Service\CustomSerializerInterface;
 use App\Service\CustomValidatorInterface;
+use App\Service\UserTokenInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +30,8 @@ final class UserController extends AbstractController{
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly CustomSerializerInterface $serializer,
         private readonly CustomValidatorInterface $validator,
-        private readonly TagAwareCacheInterface $cache
+        private readonly TagAwareCacheInterface $cache,
+        private readonly UserTokenInterface $userToken
     )
     {
     }
@@ -58,7 +61,13 @@ final class UserController extends AbstractController{
     )]
     #[OA\Tag(name: 'Utilisateurs')]
     #[Route('', name: 'users', methods: ['GET'])]
-    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN") or ' .
+            'is_granted("ROLE_ADMIN")'
+        ),
+        message: 'Vous ne disposez pas des droits pour voir ces données'
+    )]
     public function getUsers(Request $request): JsonResponse
     {
         return new JsonResponse($this->serializer->serialize(User::class, $request, null), Response::HTTP_OK, [], true);
@@ -74,7 +83,15 @@ final class UserController extends AbstractController{
     )]
     #[OA\Tag(name: 'Utilisateurs')]
     #[Route('/{id}', name: 'user', requirements: ['id' => '\d+'], methods: ['GET'])]
-    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour voir ces données')]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN") or ' .
+            '(is_granted("ROLE_ADMIN") and user.getCustomer() === subject.getCustomer()) or ' .
+            'user === subject'
+        ),
+        subject: 'user',
+        message: 'Vous ne disposez pas des droits pour voir ces données'
+    )]
     public function getDetailsUser(User $user): JsonResponse
     {
         return new JsonResponse($this->serializer->serialize(User::class, null, $user), Response::HTTP_OK, [], true);
@@ -93,7 +110,12 @@ final class UserController extends AbstractController{
     )]
     #[OA\Tag(name: 'Utilisateurs')]
     #[Route('', name: 'createUser', methods: ['POST'])]
-    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour créer un utilisateur')]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN") or ' .
+            'is_granted("ROLE_ADMIN")'
+        ),
+        message: 'Vous ne disposez pas des droits pour créer un utilisateur')]
     public function createUser(Request $request): JsonResponse
     {
         $content = $request->toArray();
@@ -108,9 +130,7 @@ final class UserController extends AbstractController{
             $user->setPassword($this->passwordHasher->hashPassword($user, $content['password']));
         }
         
-        if (isset($content['idCustomer'])) {
-            $user->setCustomer($this->em->getRepository(Customer::class)->find($content['idCustomer']));
-        }
+        $user->setCustomer($this->userToken->getCurrentUser());
 
         $this->validator->validate($user);
 
@@ -134,28 +154,22 @@ final class UserController extends AbstractController{
     )]
     #[OA\Tag(name: 'Utilisateurs')]
     #[Route('/{id}', name: 'updateUser', requirements: ['id' => '\d+'], methods: ['PUT'])]
-    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour modifier un utilisateur')]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN") or ' .
+            '(is_granted("ROLE_ADMIN") and user.getCustomer() === subject.getCustomer()) or ' .
+            'user === subject'
+        ),
+        subject: 'user',
+        message: 'Vous ne disposez pas des droits pour modifier un utilisateur'
+    )]
     public function updateUser(User $user, Request $request): JsonResponse
     {
-        $content = $request->toArray();
-
         $requestedUser = $this->serializer->deserialize(User::class, $request);
 
         $user->setEmail($requestedUser->getEmail());
         $user->setFirstname($requestedUser->getFirstname());
         $user->setLastname($requestedUser->getLastname());
-
-        if (isset($content['roles'])) {
-            $user->setRoles($content['roles']);
-        }
-
-        if (isset($content['password'])) {
-            $user->setPassword($this->passwordHasher->hashPassword($user, $content['password']));
-        }
-        
-        if (isset($content['idCustomer'])) {
-            $user->setCustomer($this->em->getRepository(Customer::class)->find($content['idCustomer']));
-        }
 
         $this->validator->validate($user);
 
@@ -176,7 +190,14 @@ final class UserController extends AbstractController{
     )]
     #[OA\Tag(name: 'Utilisateurs')]
     #[Route('{id}', name: 'deleteUser', requirements: ['id' => '\d+'], methods: ['DELETE'])]
-    #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour supprimer un utilisateur')]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN") or ' .
+            '(is_granted("ROLE_ADMIN") and user.getCustomer() === subject.getCustomer())'
+        ),
+        subject: 'user',
+        message: 'Vous ne disposez pas des droits pour supprimer un utilisateur'
+    )]
     public function deleteUser(User $user): JsonResponse
     {
         $this->cache->invalidateTags(['userCache']);
@@ -185,5 +206,112 @@ final class UserController extends AbstractController{
         $this->em->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Permet de modifier le mot de passe d'un utilisateur.
+     */
+    #[OA\Response(
+        response: 200,
+        description: 'Modifier le mot de passe d\'un utilisateur',
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            example: '{"password": "string"}'
+        )
+    )]
+    #[OA\Tag(name: 'Utilisateurs')]
+    #[Route('/{id}', name: 'resetPassword', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN") or ' .
+            '(is_granted("ROLE_ADMIN") and user.getCustomer() === subject.getCustomer()) or ' .
+            'user === subject'
+        ),
+        subject: 'user',
+        message: 'Vous ne disposez pas des droits pour modifier le mot de passe d\'un utilisateur'
+    )]
+    public function resetPassword(User $user, Request $request): JsonResponse
+    {
+        $user->setPassword($this->passwordHasher->hashPassword($user, $request->toArray()['password'] ?? ''));
+
+        $this->validator->validate($user);
+
+        $this->cache->invalidateTags(['userCache']);
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return new JsonResponse(null, Response::HTTP_OK);
+    }
+
+    /**
+     * Permet de modifier le role d'un utilisateur.
+     */
+    #[OA\Response(
+        response: 200,
+        description: 'Modifier le role d\'un utilisateur',
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            example: '{"roles": ["string"]}'
+        )
+    )]
+    #[OA\Tag(name: 'Utilisateurs')]
+    #[Route('/{id}', name: 'updateRoles', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN")'
+        ),
+        subject: 'user',
+        message: 'Vous ne disposez pas des droits pour modifier le role d\'un utilisateur'
+    )]
+    public function updateRoles(User $user, Request $request): JsonResponse
+    {
+        $user->setRoles($request->toArray()['roles'] ?? []);
+
+        $this->validator->validate($user);
+
+        $this->cache->invalidateTags(['userCache']);
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return new JsonResponse(null, Response::HTTP_OK);
+    }
+
+    /**
+     * Permet de modifier le client d'un utilisateur.
+     */
+    #[OA\Response(
+        response: 200,
+        description: 'Modifier le client d\'un utilisateur',
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            example: '{"customer": int}'
+        )
+    )]
+    #[OA\Tag(name: 'Utilisateurs')]
+    #[Route('/{id}', name: 'updateUserCustomer', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[IsGranted(
+        new Expression(
+            'is_granted("ROLE_SUPER_ADMIN")'
+        ),
+        subject: 'user',
+        message: 'Vous ne disposez pas des droits pour modifier le client d\'un utilisateur'
+    )]
+    public function updateUserCustomer(User $user, Request $request): JsonResponse
+    {
+        $user->setCustomer($request->toArray()['customer'] ?? []);
+
+        $this->validator->validate($user);
+
+        $this->cache->invalidateTags(['userCache']);
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return new JsonResponse(null, Response::HTTP_OK);
     }
 }
