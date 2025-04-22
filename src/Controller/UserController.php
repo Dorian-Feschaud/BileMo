@@ -189,7 +189,7 @@ final class UserController extends AbstractController{
         description: 'Supprimer un utilisateur',
     )]
     #[OA\Tag(name: 'Utilisateurs')]
-    #[Route('{id}', name: 'deleteUser', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[Route('/{id}', name: 'deleteUser', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     #[IsGranted(
         new Expression(
             'is_granted("ROLE_SUPER_ADMIN") or ' .
