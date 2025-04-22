@@ -19,11 +19,20 @@ class ProductRepository extends ServiceEntityRepository
     /**
      * @return Product[] Returns an array of Product objects
      */
-    public function findByPageLimit(int $page = 1, int $limit = 10): array
+    public function findByPageLimit(int $page = 1, int $limit = 10, ?int $customerId): array
     {
-        $queryBuiler = $this->createQueryBuilder('p')
-            ->setFirstResult(($page - 1) * $limit)
-            ->setMaxResults($limit);
+        if ($customerId != null) {
+            $queryBuiler = $this->createQueryBuilder('p')
+                ->where(':customerId MEMBER OF p.customers')
+                ->setParameter('customerId', $customerId)
+                ->setFirstResult(($page - 1) * $limit)
+                ->setMaxResults($limit);
+        }
+        else {
+            $queryBuiler = $this->createQueryBuilder('p')
+                ->setFirstResult(($page - 1) * $limit)
+                ->setMaxResults($limit);
+        }
 
         return $queryBuiler->getQuery()->getResult();
     }
