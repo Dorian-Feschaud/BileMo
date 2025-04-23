@@ -38,7 +38,11 @@ DATABASE_URL="mysql://db_user:db_password@127.0.0.1:3306/nom_de_la_bdd"
 php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate
 
-5. **Lancez le serveur de développement :**
+5. **Lancer les fixtures :**
+
+php bin/console doctrine:fixtures:load
+
+6. **Lancez le serveur de développement :**
 
 symfony serve
 
