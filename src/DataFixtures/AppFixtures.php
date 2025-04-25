@@ -89,7 +89,7 @@ class AppFixtures extends Fixture
             static function(int $i) {
                 return [
                     'name' => "Product $i",
-                    'customers' => CustomerFactory::randomRange(0, 5)
+                    'customers' => CustomerFactory::randomRange(1, 5)
                 ];
             }
         );
