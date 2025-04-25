@@ -228,7 +228,7 @@ final class UserController extends AbstractController{
         )
     )]
     #[OA\Tag(name: 'Utilisateurs')]
-    #[Route('/{id}/resetPassword', name: 'resetPassword', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[Route('/{id}/resetPassword', name: 'resetPassword', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted(
         new Expression(
             'is_granted("ROLE_SUPER_ADMIN") or ' .
@@ -270,7 +270,7 @@ final class UserController extends AbstractController{
         )
     )]
     #[OA\Tag(name: 'Utilisateurs')]
-    #[Route('/{id}/updateRoles', name: 'updateRoles', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[Route('/{id}/updateRoles', name: 'updateRoles', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted(
         new Expression(
             'is_granted("ROLE_SUPER_ADMIN")'
@@ -305,7 +305,7 @@ final class UserController extends AbstractController{
         )
     )]
     #[OA\Tag(name: 'Utilisateurs')]
-    #[Route('/{id}/updateCustomer', name: 'updateCustomer', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[Route('/{id}/updateCustomer', name: 'updateCustomer', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted(
         new Expression(
             'is_granted("ROLE_SUPER_ADMIN")'
