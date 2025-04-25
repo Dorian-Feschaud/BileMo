@@ -26,7 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Hateoas\Relation(
     'resetPassword',
     href: new Hateoas\Route(name: 'resetPassword', parameters: ['id' => 'expr(object.getId())']),
-    attributes: ["method" => "PUT"],
+    attributes: ["method" => "POST"],
     exclusion: new Hateoas\Exclusion(groups: ['read:user'])
 )]
 #[Hateoas\Relation(
