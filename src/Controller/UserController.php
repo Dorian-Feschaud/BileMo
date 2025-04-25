@@ -125,13 +125,20 @@ final class UserController extends AbstractController{
         if (isset($content['roles'])) {
             $user->setRoles($content['roles']);
         }
+        else {
+            $user->setRoles(['ROLE_MEMBER']);
+        }
 
         if (isset($content['password'])) {
             $user->setPassword($this->passwordHasher->hashPassword($user, $content['password']));
         }
-        
-        $user->setCustomer($this->userToken->getCurrentUser());
 
+        $currentUser = $this->userToken->getCurrentUser();
+
+        if ($currentUser instanceof User) {
+            $user->setCustomer($currentUser->getCustomer());
+        }
+        
         $this->validator->validate($user);
 
         $this->cache->invalidateTags(['userCache']);
