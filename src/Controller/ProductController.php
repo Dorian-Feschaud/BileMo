@@ -4,15 +4,19 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Entity\Product;
+use App\Service\CleanGetterSetterInterface;
 use App\Service\CustomSerializerInterface;
 use App\Service\CustomValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Error;
+use Exception;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -26,7 +30,8 @@ final class ProductController extends AbstractController{
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly CustomSerializerInterface $serializer,
         private readonly CustomValidatorInterface $validator,
-        private readonly TagAwareCacheInterface $cache
+        private readonly TagAwareCacheInterface $cache,
+        private readonly CleanGetterSetterInterface $cleanGetterSetter
     )
     {
     }
@@ -93,6 +98,7 @@ final class ProductController extends AbstractController{
     public function createProduct(Request $request): JsonResponse
     {
         $product = $this->serializer->deserialize(Product::class, $request);
+        // $product->setCustomers([]);
 
         $this->validator->validate($product);
 
@@ -122,27 +128,13 @@ final class ProductController extends AbstractController{
     {
         $requestedProduct = $this->serializer->deserialize(Product::class, $request);
 
-        $product->setName($requestedProduct->getName());
-        $product->setManufacturer($requestedProduct->getManufacturer());
-        $product->setReleaseDate($requestedProduct->getReleaseDate());
-        $product->setPrice($requestedProduct->getPrice());
-        $product->setColor($requestedProduct->getColor());
-        $product->setCapacity($requestedProduct->getCapacity());
-        $product->setWidth($requestedProduct->getWidth());
-        $product->setHeight($requestedProduct->getHeight());
-        $product->setThickness($requestedProduct->getThickness());
-        $product->setWeight($requestedProduct->getWeight());
-        $product->setScreen($requestedProduct->getScreen());
-        $product->setScreenHeight($requestedProduct->getScreenHeight());
-        $product->setScreenWidth($requestedProduct->getScreenWidth());
-        $product->setScreenResolution($requestedProduct->getScreenResolution());
-        $product->setBackCamera($requestedProduct->getBackCamera());
-        $product->setBackCameraResolution($requestedProduct->getBackCameraResolution());
-        $product->setFrontCameraResolution($requestedProduct->getFrontCameraResolution());
-        $product->setProcessor($requestedProduct->getProcessor());
-        $product->setRam($requestedProduct->getRam());
-        $product->setBatteryCapacity($requestedProduct->getBatteryCapacity());
-        $product->setNetwork($requestedProduct->getNetwork());
+        foreach ($request->toArray() as $property => $value) {
+            try {
+                $product->{$this->cleanGetterSetter->getCleanSetter($property)}($requestedProduct->{$this->cleanGetterSetter->getCleanGetter($property)}());
+            } catch (Error $e) {
+                throw new HttpException(Response::HTTP_BAD_REQUEST, $this->serializer->serializeErrors(['property_path' => $property, 'message' => 'Property ' . $property . ' is not a valid property.']));
+            }
+        }
 
         $this->validator->validate($product);
 
