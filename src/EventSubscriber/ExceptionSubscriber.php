@@ -2,6 +2,7 @@
 
 namespace App\EventSubscriber;
 
+use JMS\Serializer\SerializerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -10,6 +11,12 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class ExceptionSubscriber implements EventSubscriberInterface
 {
+    public function __construct(
+        private readonly SerializerInterface $serializer
+    )
+    {
+        
+    }
     public function onKernelException(ExceptionEvent $event): void
     {
         $exception = $event->getThrowable();
@@ -17,7 +24,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
         if ($exception instanceof HttpException) {
             $event->setResponse(new JsonResponse($exception->getMessage(), $exception->getStatusCode(), [], true));
       } else {
-            $event->setResponse(new JsonResponse($exception->getMessage(), 500, [], true));
+            $event->setResponse(new JsonResponse($this->serializer->serialize($exception->getMessage(), 'json'), 500, [], true));
       }
    }
 
