@@ -128,6 +128,8 @@ final class ProductController extends AbstractController{
     {
         $requestedProduct = $this->serializer->deserialize(Product::class, $request);
 
+        $this->validator->validate($requestedProduct);
+
         foreach ($request->toArray() as $property => $value) {
             try {
                 $product->{$this->cleanGetterSetter->getCleanSetter($property)}($requestedProduct->{$this->cleanGetterSetter->getCleanGetter($property)}());
