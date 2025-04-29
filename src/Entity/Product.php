@@ -53,6 +53,12 @@ class Product
     #[ORM\Column(length: 255)]
     #[Groups(['create:product', 'read:product', 'read:customer'])]
     #[Assert\NotBlank()]
+    #[Assert\Length(
+        min: 2,
+        max: 256,
+        minMessage: 'The product name must be at least {{ limit }} characters long',
+        maxMessage: 'The product name cannot be longer than {{ limit }} characters',
+    )]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]

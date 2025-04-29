@@ -57,9 +57,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['read:user', 'read:customer'])]
     private ?int $id = null;
 
+    #[ORM\Column(length: 255)]
+    #[Groups(['create:user', 'read:user'])]
+    #[Assert\NotBlank()]
+    #[Assert\Length(
+        min: 2,
+        max: 256,
+        minMessage: 'Your first name must be at least {{ limit }} characters long',
+        maxMessage: 'Your first name cannot be longer than {{ limit }} characters',
+    )]
+    private ?string $firstname = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['create:user', 'read:user'])]
+    #[Assert\NotBlank()]
+    #[Assert\Length(
+        min: 2,
+        max: 256,
+        minMessage: 'Your last name must be at least {{ limit }} characters long',
+        maxMessage: 'Your last name cannot be longer than {{ limit }} characters',
+    )]
+    private ?string $lastname = null;
+
     #[ORM\Column(length: 180)]
     #[Groups(['create:user', 'read:user', 'read:customer'])]
     #[Assert\NotBlank()]
+    #[Assert\Email()]
+    #[Assert\Length(
+        min: 2,
+        max: 256,
+        minMessage: 'Your email must be at least {{ limit }} characters long',
+        maxMessage: 'Your email cannot be longer than {{ limit }} characters',
+    )]
     private ?string $email = null;
 
     /**
@@ -81,19 +110,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['read:user'])]
     private ?Customer $customer = null;
 
-    #[ORM\Column(length: 255)]
-    #[Groups(['create:user', 'read:user'])]
-    #[Assert\NotBlank()]
-    private ?string $firstname = null;
-
-    #[ORM\Column(length: 255)]
-    #[Groups(['create:user', 'read:user'])]
-    #[Assert\NotBlank()]
-    private ?string $lastname = null;
-
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getFirstname(): ?string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstname(string $firstname): static
+    {
+        $this->firstname = $firstname;
+
+        return $this;
+    }
+
+    public function getLastname(): ?string
+    {
+        return $this->lastname;
+    }
+
+    public function setLastname(string $lastname): static
+    {
+        $this->lastname = $lastname;
+
+        return $this;
     }
 
     public function getEmail(): ?string
@@ -182,30 +225,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCustomer(?Customer $customer): static
     {
         $this->customer = $customer;
-
-        return $this;
-    }
-
-    public function getFirstname(): ?string
-    {
-        return $this->firstname;
-    }
-
-    public function setFirstname(string $firstname): static
-    {
-        $this->firstname = $firstname;
-
-        return $this;
-    }
-
-    public function getLastname(): ?string
-    {
-        return $this->lastname;
-    }
-
-    public function setLastname(string $lastname): static
-    {
-        $this->lastname = $lastname;
 
         return $this;
     }

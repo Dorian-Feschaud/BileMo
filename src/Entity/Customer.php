@@ -40,6 +40,12 @@ class Customer
     #[ORM\Column(length: 255)]
     #[Groups(['create:customer', 'read:customer', 'read:product', 'read:user'])]
     #[Assert\NotBlank()]
+    #[Assert\Length(
+        min: 2,
+        max: 256,
+        minMessage: 'The customer name must be at least {{ limit }} characters long',
+        maxMessage: 'The customer name cannot be longer than {{ limit }} characters',
+    )]
     private ?string $name = null;
 
     /**
