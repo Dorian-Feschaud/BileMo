@@ -51,7 +51,7 @@ class Customer
     /**
      * @var Collection<int, User>
      */
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'customer')]
+    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'customer', cascade: ['remove'])]
     #[Groups(['read:customer'])]
     private Collection $users;
 
