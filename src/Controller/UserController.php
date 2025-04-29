@@ -305,7 +305,7 @@ final class UserController extends AbstractController{
         )
     )]
     #[OA\Tag(name: 'Utilisateurs')]
-    #[Route('/{id}/updateCustomer', name: 'updateCustomer', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/{id}/updateAdminCustomer', name: 'updateAdminCustomer', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted(
         new Expression(
             'is_granted("ROLE_SUPER_ADMIN")'
@@ -313,7 +313,7 @@ final class UserController extends AbstractController{
         subject: 'user',
         message: 'Vous ne disposez pas des droits pour modifier le client d\'un utilisateur'
     )]
-    public function updateCustomer(User $user, Request $request): JsonResponse
+    public function updateAdminCustomer(User $user, Request $request): JsonResponse
     {
         $user->setCustomer($this->em->getRepository(Customer::class)->find($request->toArray()['customer'] ?? -1));
 
