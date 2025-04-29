@@ -2,7 +2,7 @@
 
 namespace App\EventSubscriber;
 
-use JMS\Serializer\SerializerInterface;
+use App\Service\CustomSerializerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class ExceptionSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly SerializerInterface $serializer
+        private readonly CustomSerializerInterface $serializer
     )
     {
         
@@ -22,9 +22,14 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
 
         if ($exception instanceof HttpException) {
-            $event->setResponse(new JsonResponse($exception->getMessage(), $exception->getStatusCode(), [], true));
+            if ($exception->getStatusCode() == 404) {
+                $event->setResponse(new JsonResponse($this->serializer->serializeErrors(['message' => 'Invalid url']), $exception->getStatusCode(), [], true));
+            }
+            else {
+                $event->setResponse(new JsonResponse($exception->getMessage(), $exception->getStatusCode(), [], true));
+            }
       } else {
-            $event->setResponse(new JsonResponse($this->serializer->serialize($exception->getMessage(), 'json'), 500, [], true));
+            $event->setResponse(new JsonResponse($this->serializer->serializeErrors(['message' => $exception->getMessage()], 'json'), 500, [], true));
       }
    }
 
