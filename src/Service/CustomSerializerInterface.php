@@ -52,7 +52,7 @@ class CustomSerializerInterface {
         return $this->serializer->deserialize($request->getContent(), $entityName, 'json', $this->serializationContextGenerator->createContext('create', $this->getCleanEntityName($entityName)));
     }
 
-    public function serializeErrors(ConstraintViolationListInterface $errors): String {
+    public function serializeErrors(mixed $errors): String {
         return $this->serializer->serialize($errors, 'json');
     }
 
