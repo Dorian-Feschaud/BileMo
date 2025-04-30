@@ -3,7 +3,6 @@
 namespace App\Service;
 
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CustomValidatorInterface {
@@ -22,7 +21,7 @@ class CustomValidatorInterface {
         $errors = $this->validator->validate($entity);
 
         if ($errors->count() > 0) {
-            throw new HttpException(Response::HTTP_BAD_REQUEST, $this->serializer->serializeErrors($errors));
+            throw new CustomException(Response::HTTP_BAD_REQUEST, $this->serializer->serializeErrors($errors));
         }
     }
 }
