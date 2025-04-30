@@ -134,7 +134,7 @@ final class ProductController extends AbstractController{
             try {
                 $product->{$this->cleanGetterSetter->getCleanSetter($property)}($requestedProduct->{$this->cleanGetterSetter->getCleanGetter($property)}());
             } catch (Error $e) {
-                throw new HttpException(Response::HTTP_BAD_REQUEST, $this->serializer->serializeErrors(['property_path' => $property, 'message' => 'Property ' . $property . ' is not a valid property.']));
+                throw new HttpException(Response::HTTP_BAD_REQUEST,'Property ' . $property . ' doesn\'t exist.');
             }
         }
 
