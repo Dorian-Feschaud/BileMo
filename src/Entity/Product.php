@@ -32,7 +32,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Hateoas\Relation(
     'removeCustomers',
     href: new Hateoas\Route(name: 'removeCustomers', parameters: ['id' => 'expr(object.getId())']),
-    attributes: ["method" => "POST"],
+    attributes: ["method" => "DELETE"],
     exclusion: new Hateoas\Exclusion(groups: ['read:product'], excludeIf: 'expr(not is_granted("ROLE_SUPER_ADMIN"))')
 )]
 #[Hateoas\Relation(

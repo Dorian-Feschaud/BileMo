@@ -182,7 +182,7 @@ final class ProductController extends AbstractController{
         )
     )]
     #[OA\Tag(name: 'Produits')]
-    #[Route('/{id}/addCustomers', name: 'addCustomers', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/{id}/customers', name: 'addCustomers', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour lier un produit à un ou plusieurs clients')]
     public function addCustomers(Product $product, Request $request): JsonResponse
     {
@@ -217,7 +217,7 @@ final class ProductController extends AbstractController{
         )
     )]
     #[OA\Tag(name: 'Produits')]
-    #[Route('/{id}/removeCustomers', name: 'removeCustomers', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/{id}/customers', name: 'removeCustomers', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     #[IsGranted('ROLE_SUPER_ADMIN', message: 'Vous ne disposez pas des droits pour retirer un produit à un ou plusieurs clients')]
     public function removeCustomers(Product $product, Request $request): JsonResponse
     {
