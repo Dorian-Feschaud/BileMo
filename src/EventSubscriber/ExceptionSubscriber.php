@@ -2,6 +2,7 @@
 
 namespace App\EventSubscriber;
 
+use App\Service\CustomException;
 use App\Service\CustomSerializerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,16 +22,20 @@ class ExceptionSubscriber implements EventSubscriberInterface
     {
         $exception = $event->getThrowable();
 
-        if ($exception instanceof HttpException) {
-            if ($exception->getStatusCode() == 404) {
-                $event->setResponse(new JsonResponse($this->serializer->serializeErrors(['message' => 'Invalid url']), $exception->getStatusCode(), [], true));
+        if ($exception instanceof CustomException) {
+            $statusCode = $exception->getStatusCode();
+            $data = $exception->getMessage();
+        }
+        else {
+            $data = $this->serializer->serializeErrors(['message' => $exception->getMessage()]);
+            if ($exception instanceof HttpException) {
+                $statusCode = $exception->getStatusCode();
+            } else {
+                $statusCode = 500;
             }
-            else {
-                $event->setResponse(new JsonResponse($exception->getMessage(), $exception->getStatusCode(), [], true));
-            }
-      } else {
-            $event->setResponse(new JsonResponse($this->serializer->serializeErrors(['message' => $exception->getMessage()], 'json'), 500, [], true));
-      }
+        }
+
+        $event->setResponse(new JsonResponse($data, $statusCode, [], true));
    }
 
     public static function getSubscribedEvents(): array
