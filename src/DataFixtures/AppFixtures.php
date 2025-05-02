@@ -75,7 +75,7 @@ class AppFixtures extends Fixture
             static function() {
                 return [
                     'roles' => ["ROLE_USER"],
-                    'customer' => CustomerFactory::find(['name' => "Customer " . random_int(0, 5)])
+                    'customer' => CustomerFactory::find(['name' => "Customer " . random_int(1, 5)])
                 ];
             }
         );
@@ -89,7 +89,7 @@ class AppFixtures extends Fixture
             static function(int $i) {
                 return [
                     'name' => "Product $i",
-                    'customers' => CustomerFactory::randomRange(1, 5)
+                    'customers' => CustomerFactory::randomRange(0, 5)
                 ];
             }
         );

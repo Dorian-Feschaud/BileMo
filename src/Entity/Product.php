@@ -32,7 +32,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Hateoas\Relation(
     'removeCustomers',
     href: new Hateoas\Route(name: 'removeCustomers', parameters: ['id' => 'expr(object.getId())']),
-    attributes: ["method" => "POST"],
+    attributes: ["method" => "DELETE"],
     exclusion: new Hateoas\Exclusion(groups: ['read:product'], excludeIf: 'expr(not is_granted("ROLE_SUPER_ADMIN"))')
 )]
 #[Hateoas\Relation(
@@ -53,6 +53,12 @@ class Product
     #[ORM\Column(length: 255)]
     #[Groups(['create:product', 'read:product', 'read:customer'])]
     #[Assert\NotBlank()]
+    #[Assert\Length(
+        min: 2,
+        max: 256,
+        minMessage: 'The product name must be at least {{ limit }} characters long',
+        maxMessage: 'The product name cannot be longer than {{ limit }} characters',
+    )]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
